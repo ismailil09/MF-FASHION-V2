@@ -2125,6 +2125,8 @@ tbody td.muted{color:var(--text3);}
   <div class="nav-item" onclick="showPage('sales',this)"><span class="nav-icon">🛒</span>Sales & Orders<span class="nav-badge" id="sales-badge">—</span></div>
   <div class="nav-item" onclick="showPage('baki',this)"><span class="nav-icon">📒</span>বাকি (Due)<span class="nav-badge" id="baki-badge" style="display:none;"></span></div>
   <div class="nav-item" onclick="showPage('inventory',this)"><span class="nav-icon">📦</span>Inventory<span class="nav-badge red" id="inv-badge" style="background:var(--red);">—</span></div>
+  <div class="nav-item" onclick="showPage('fabric',this)"><span class="nav-icon">🧵</span>কাপড়ের স্টক<span class="nav-badge red" id="fab-badge" style="display:none;background:var(--red);"></span></div>
+  <div class="nav-item" onclick="showPage('production',this)"><span class="nav-icon">🏭</span>প্রোডাকশন</div>
   <div class="nav-item" onclick="showPage('expense',this)"><span class="nav-icon">💸</span>Expenses</div>
   <div class="nav-item" onclick="showPage('cashflow',this)"><span class="nav-icon">💰</span>Cash Flow</div>
   <div class="nav-item" onclick="showPage('purchases',this)"><span class="nav-icon">🧾</span>Purchase Tracker</div>
@@ -2582,6 +2584,100 @@ tbody td.muted{color:var(--text3);}
               </tr>
             </thead>
             <tbody id="inv-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PAGE: PRODUCTION — সাইজ চার্ট, প্রোডাকশন ব্যাচ, প্রতি পিসের খরচ
+    ═══════════════════════════════════════════════════════════ -->
+    <div class="page" id="page-production">
+      <div class="breadcrumb">MF FASHION OS / <span>প্রোডাকশন</span></div>
+      <div class="section-head">
+        <h2>🏭 প্রোডাকশন (সাইজ চার্ট ও খরচ)</h2>
+        <p>প্রতি সাইজে কত গজ লাগে নিজে সেট করুন — প্রোডাকশনে পিস দিলে কাপড় বাদ ও প্রতি পিসের খরচ নিজে হিসাব হবে</p>
+      </div>
+
+      <div class="table-wrapper">
+        <div class="table-header">
+          <span class="table-title">পণ্যের ধরন ও সাইজ চার্ট</span>
+          <div class="table-actions">
+            <button class="btn primary" onclick="prodOpenType()">+ নতুন পণ্যের ধরন</button>
+          </div>
+        </div>
+        <div id="pmod-types" style="padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;"></div>
+      </div>
+
+      <div class="table-wrapper" style="margin-top:20px;">
+        <div class="table-header">
+          <span class="table-title">প্রোডাকশন ব্যাচ (সর্বশেষ ২০০টি)</span>
+          <div class="table-actions">
+            <button class="btn success" onclick="prodOpenBatch()">➕ নতুন প্রোডাকশন</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>ব্যাচ</th><th>তারিখ</th><th>পণ্য</th><th>কাপড়</th><th>পিস (সাইজ অনুযায়ী)</th><th>গজ (পরিকল্পিত/ব্যবহৃত)</th><th>অপচয়</th><th>মোট খরচ</th><th>গড় খরচ/পিস</th><th></th></tr>
+            </thead>
+            <tbody id="pmod-batches"><tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px;">লোড হচ্ছে…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PAGE: FABRIC STOCK — কাপড়ের স্টক (গজ হিসাব)  [new, independent module]
+    ═══════════════════════════════════════════════════════════ -->
+    <div class="page" id="page-fabric">
+      <div class="breadcrumb">MF FASHION OS / <span>কাপড়ের স্টক</span></div>
+      <div class="section-head">
+        <h2>🧵 কাপড়ের স্টক (Fabric Inventory)</h2>
+        <p>গজ হিসাবে কাপড়ের ক্রয়, ব্যবহার ও অপচয় — কালার অনুযায়ী স্টক, গড় দাম ও স্টক মূল্য</p>
+      </div>
+
+      <div class="alert-box danger" id="fab-low-alert" style="display:none;">⚠️ <strong id="fab-low-text">—</strong></div>
+
+      <div class="inv-grid" id="fab-kpis"></div>
+
+      <div class="table-wrapper">
+        <div class="table-header">
+          <span class="table-title">কাপড়ের তালিকা</span>
+          <div class="table-actions">
+            <input class="form-input" id="fab-search" type="text" placeholder="🔍 নাম / কালার খুঁজুন" oninput="fabRenderItems()" style="width:190px;padding:6px 10px;font-size:12px;">
+            <button class="btn primary" onclick="fabOpenItem()">+ নতুন কাপড়</button>
+            <button class="btn success" onclick="fabOpenEntry('','Purchase')">➕ ক্রয় (গজ যোগ)</button>
+            <button class="btn danger" onclick="fabOpenEntry('','Used')">➖ ব্যবহার</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>কাপড়</th><th>কালার</th><th>স্টক (গজ)</th>
+                <th>গড় দাম/গজ</th><th>স্টক মূল্য</th><th>মোট ক্রয়</th>
+                <th>ব্যবহৃত</th><th>অপচয়</th><th>স্ট্যাটাস</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="fab-body"><tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px;">লোড হচ্ছে…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-wrapper" style="margin-top:20px;">
+        <div class="table-header">
+          <span class="table-title">লেনদেনের ইতিহাস (সর্বশেষ ১০০টি)</span>
+          <div class="table-actions">
+            <select class="form-select" id="fab-ledger-filter" onchange="fabRenderLedger()" style="width:220px;padding:6px 10px;font-size:12px;"><option value="">সব কাপড়</option></select>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>তারিখ</th><th>কাপড়</th><th>ধরন</th><th>গজ</th><th>দাম/গজ</th><th>টাকা</th><th>বিবরণ</th><th></th></tr>
+            </thead>
+            <tbody id="fab-ledger-body"></tbody>
           </table>
         </div>
       </div>
@@ -5081,6 +5177,136 @@ tbody td.muted{color:var(--text3);}
 
 
 <!-- MODAL: ADD PRODUCT -->
+<!-- ═══ PRODUCTION MODALS ═══ -->
+<div class="modal-overlay" id="modal-prod-type">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="prt-title">🏭 নতুন পণ্যের ধরন</span>
+      <button class="modal-close" onclick="closeModal('prod-type')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="prt-id">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">পণ্যের ধরন *</label><input class="form-input" id="prt-name" type="text" maxlength="60" placeholder="যেমন: Panjabi, Pajama, Shirt"></div>
+      </div>
+
+      <div style="margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+        <label class="form-label" style="margin:0;">সাইজ ও প্রতি পিসে গজ *</label>
+        <span style="font-size:11px;color:var(--text3);">দ্রুত সাইজ:
+          <button class="btn" style="padding:2px 8px;font-size:11px;" onclick="prodPreset('S,M,L,XL,XXL')">S M L XL XXL</button>
+          <button class="btn" style="padding:2px 8px;font-size:11px;" onclick="prodPreset('36,38,40,42,44')">36–44</button>
+        </span>
+      </div>
+      <div id="prt-sizes"></div>
+      <button class="btn" style="margin-top:6px;" onclick="prodAddSizeRow()">+ সাইজ যোগ</button>
+
+      <div style="margin:16px 0 6px;"><label class="form-label" style="margin:0;">প্রতি পিসের অন্যান্য খরচ (৳) — সেলাই, বোতাম, প্যাকেজিং…</label></div>
+      <div id="prt-costs"></div>
+      <button class="btn" style="margin-top:6px;" onclick="prodAddCostRow()">+ খরচ যোগ</button>
+
+      <div style="margin:16px 0 4px;"><label class="form-label" style="margin:0;">সাইজ অনুযায়ী আলাদা খরচ / মজুরি (ঐচ্ছিক)</label></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">যে সাইজে মজুরি আলাদা, শুধু সেই ঘরে টাকা লিখুন। ফাঁকা রাখলে উপরের সাধারণ টাকাই ধরা হবে।</div>
+      <div id="prt-ov" style="overflow-x:auto;"></div>
+
+      <div class="form-grid" style="margin-top:12px;">
+        <div class="form-group full"><label class="form-label">নোট</label><input class="form-input" id="prt-notes" type="text" maxlength="300" placeholder="Optional"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('prod-type')">Cancel</button>
+      <button class="btn primary" id="prt-save" onclick="prodSaveType()">💾 সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-prod-batch">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🏭 নতুন প্রোডাকশন</span>
+      <button class="modal-close" onclick="closeModal('prod-batch')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">কাপড় *</label><select class="form-select" id="pb-fabric" onchange="prodBatchCalc()"></select></div>
+        <div class="form-group"><label class="form-label">পণ্যের ধরন *</label><select class="form-select" id="pb-type" onchange="prodBatchType()"></select></div>
+        <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" id="pb-date" type="date"></div>
+        <div class="form-group"><label class="form-label">নোট</label><input class="form-input" id="pb-note" type="text" maxlength="200" placeholder="Optional"></div>
+      </div>
+
+      <div style="margin:14px 0 6px;"><label class="form-label" style="margin:0;">কোন সাইজের কত পিস</label></div>
+      <div id="pb-sizes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;"></div>
+
+      <div class="form-grid" style="margin-top:12px;">
+        <div class="form-group"><label class="form-label">আসলে কত গজ কাটা হলো (ঐচ্ছিক)</label><input class="form-input" id="pb-actual" type="number" min="0" step="0.01" placeholder="খালি রাখলে পরিকল্পিত গজই ধরা হবে" oninput="prodBatchCalc()"></div>
+      </div>
+      <div class="alert-box info" id="pb-summary" style="margin-top:12px;">—</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('prod-batch')">Cancel</button>
+      <button class="btn primary" id="pb-save" onclick="prodSaveBatch()">💾 প্রোডাকশন সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FABRIC MODALS (কাপড়ের স্টক) ═══ -->
+<div class="modal-overlay" id="modal-fabric-item">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="fab-i-title">🧵 নতুন কাপড় যোগ করুন</span>
+      <button class="modal-close" onclick="closeModal('fabric-item')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="fab-i-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">কাপড়ের নাম *</label><input class="form-input" id="fab-i-name" type="text" maxlength="80" placeholder="যেমন: Cotton Twill, Linen, Voile"></div>
+        <div class="form-group"><label class="form-label">কালার</label><input class="form-input" id="fab-i-color" type="text" maxlength="40" placeholder="যেমন: Navy Blue, সাদা, কালো"></div>
+        <div class="form-group"><label class="form-label">কম স্টক সতর্কতা (গজ)</label><input class="form-input" id="fab-i-alert" type="number" min="0" step="0.5" value="5"></div>
+        <div class="form-group"><label class="form-label">সাপ্লায়ার</label><input class="form-input" id="fab-i-supplier" type="text" maxlength="80" placeholder="দোকান/সাপ্লায়ারের নাম"></div>
+        <div class="form-group" id="fab-i-open-g1"><label class="form-label">বর্তমান স্টক (গজ) — ঐচ্ছিক</label><input class="form-input" id="fab-i-opening" type="number" min="0" step="0.01" placeholder="0"></div>
+        <div class="form-group" id="fab-i-open-g2"><label class="form-label">সেই স্টকের দাম (৳/গজ)</label><input class="form-input" id="fab-i-openrate" type="number" min="0" step="0.01" placeholder="0"></div>
+        <div class="form-group full"><label class="form-label">নোট</label><textarea class="form-textarea" id="fab-i-notes" maxlength="300" placeholder="Optional notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('fabric-item')">Cancel</button>
+      <button class="btn primary" id="fab-i-save" onclick="fabSaveItem()">💾 সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-fabric-entry">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🧵 কাপড়ের স্টক এন্ট্রি</span>
+      <button class="modal-close" onclick="closeModal('fabric-entry')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">কাপড় *</label><select class="form-select" id="fab-e-item" onchange="fabEntryChanged()"></select></div>
+        <div class="form-group"><label class="form-label">ধরন *</label>
+          <select class="form-select" id="fab-e-type" onchange="fabEntryChanged()">
+            <option value="Purchase">➕ ক্রয় (গজ যোগ)</option>
+            <option value="Used">➖ ব্যবহার (কাটিং/তৈরি)</option>
+            <option value="Wastage">🗑 অপচয় / নষ্ট</option>
+            <option value="AdjustIn">⚖️ সংশোধন (+)</option>
+            <option value="AdjustOut">⚖️ সংশোধন (−)</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" id="fab-e-date" type="date"></div>
+        <div class="form-group"><label class="form-label">পরিমাণ (গজ) *</label><input class="form-input" id="fab-e-qty" type="number" min="0" step="0.01" placeholder="যেমন: 12.5" oninput="fabEntryChanged()"></div>
+        <div class="form-group" id="fab-e-rate-g"><label class="form-label">গজ প্রতি দাম (৳) *</label><input class="form-input" id="fab-e-rate" type="number" min="0" step="0.01" placeholder="যেমন: 180" oninput="fabEntryChanged()"></div>
+        <div class="form-group" id="fab-e-supplier-g"><label class="form-label">সাপ্লায়ার</label><input class="form-input" id="fab-e-supplier" type="text" maxlength="80"></div>
+        <div class="form-group"><label class="form-label">রেফারেন্স (ঐচ্ছিক)</label><input class="form-input" id="fab-e-ref" type="text" maxlength="60" placeholder="যেমন: মেমো নং / ব্যাচ"></div>
+        <div class="form-group full"><label class="form-label">নোট</label><input class="form-input" id="fab-e-note" type="text" maxlength="200" placeholder="Optional"></div>
+      </div>
+      <div class="alert-box info" id="fab-e-hint" style="margin-top:12px;">—</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('fabric-entry')">Cancel</button>
+      <button class="btn primary" id="fab-e-save" onclick="fabSaveEntry()">💾 সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-add-product">
   <div class="modal">
     <div class="modal-header">
@@ -5912,7 +6138,7 @@ tbody td.muted{color:var(--text3);}
 // ═══════════════════════════════════════════════════════════════
 
 // ⚠️ এখানে আপনার Google Apps Script Web App URL বসান (Deploy > New Deployment > Web App)
-      const API_URL = "https://script.google.com/macros/s/AKfycbwAvzllO-dbYgw-8UXqUYLrBFr-lU30ODYovmK_M3Rjztg0iyHIE6v1Ux0XtKgjsbPD/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
+      const API_URL = "https://script.google.com/macros/s/AKfycbwwnPxg8wb0LF7MOtFJ_8D2Q3wZtpFbS6nADXRBFTQ3YY3cAJxOAr6KwIHkqcSRvTPl/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
 
 // ─── CONNECTION STATE ────────────────────────────────────────
 let apiConnected = false;
@@ -8337,7 +8563,7 @@ function updateDashLowStockAlert(rows) {
 // ─── NAVIGATION ──────────────────────────────────────────────
 const pageTitles = {
   dashboard:['Dashboard','— Live Overview'], sales:['Sales & Orders','— Order Management'],
-  inventory:['Inventory','— Stock Management'], expense:['Expenses','— Cost Tracking'],
+  inventory:['Inventory','— Stock Management'], production:['Production','— প্রোডাকশন ও খরচ'], fabric:['Fabric Stock','— কাপড়ের হিসাব'], expense:['Expenses','— Cost Tracking'],
   partner:['Partners','— Accounting'], crm:['Customers','— CRM'], calculator:['Order Calculator','— Price Calculator'],
   investors:['Investors','— বিনিয়োগ ব্যবস্থাপনা'],
   'delivery-analytics':['Delivery Analytics','— ডেলিভারি বিশ্লেষণ'],
@@ -8378,6 +8604,8 @@ function showPage(id, el) {
   if(id==='strategy-hub') loadStrategyHubAll();
   if(id==='salesmen' && window.smOpenPage) smOpenPage();
   if(id==='baki' && window.bakiOpenPage) bakiOpenPage();
+  if(id==='fabric' && window.fabOpenPage) fabOpenPage();
+  if(id==='production' && window.prodOpenPage) prodOpenPage();
   if(window.innerWidth<=900) closeSidebarMobile();
   if(id !== 'activity-log' && id !== 'recycle-bin') logAction(`"${pageTitles[id]?.[0] || id}" পেজ ভিজিট করেছেন`);
 
@@ -18511,6 +18739,452 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     +(window.__igxPngBtn||'')+'<script>window.onload=function(){setTimeout(function(){window.print();},700);};<\/script></body></html>');
     w.document.close();
     try{ if(window.logAction) logAction(o.title+' প্রিন্ট করেছেন'); }catch(e){}
+  };
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   🧵 FABRIC STOCK MODULE (কাপড়ের স্টক) — independent, namespaced.
+   Uses only existing app helpers: fetchFromAPI, postToAPI, openModal,
+   closeModal, showToast, logAction. Touches no other module's data.
+═══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var S = { items:[], ledger:[], loaded:false, busy:false };
+  var TYPE = {
+    Purchase :{ l:'ক্রয়',        c:'var(--green)'  },
+    Used     :{ l:'ব্যবহার',     c:'var(--orange)' },
+    Wastage  :{ l:'অপচয়',       c:'var(--red)'    },
+    AdjustIn :{ l:'সংশোধন (+)', c:'var(--blue)'   },
+    AdjustOut:{ l:'সংশোধন (−)', c:'var(--blue)'   }
+  };
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function n2(x){ x=Number(x)||0; return (Math.round(x*100)/100).toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function tk(x){ return '৳'+n2(x); }
+  function today(){ try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka'}).format(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } }
+  function itemLabel(it){ return it.name+(it.color?' — '+it.color:''); }
+  function findItem(id){ for(var i=0;i<S.items.length;i++){ if(S.items[i].id===id) return S.items[i]; } return null; }
+
+  /* ── load ─────────────────────────────────────────── */
+  async function load(silent){
+    var d = await fetchFromAPI('fab_stock',{ _:Date.now() });
+    if(!d){
+      if(!silent) showToast('কাপড়ের ডেটা লোড হয়নি — Google Sheets সংযোগ ও GS-এর নতুন ভার্সন Deploy করা আছে কি না দেখুন','error');
+      S.loaded = false; renderAll(); return false;
+    }
+    S.items = d.items||[]; S.ledger = d.ledger||[]; S.loaded = true;
+    renderAll(); return true;
+  }
+  window.fabOpenPage = function(){ load(); };
+
+  /* ── render ───────────────────────────────────────── */
+  function statusOf(it){
+    if(it.stock<=0)              return { t:'শেষ',      c:'var(--red)'    };
+    if(it.stock<=it.alert)       return { t:'⚠ কম',     c:'var(--red)'    };
+    if(it.stock<=it.alert*2)     return { t:'সীমার কাছে', c:'var(--orange)' };
+    return { t:'ঠিক আছে', c:'var(--green)' };
+  }
+  function badge(txt,color){ return '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid '+color+';color:'+color+';">'+esc(txt)+'</span>'; }
+
+  function renderKpis(){
+    var totalGaj=0,totalVal=0,low=0;
+    S.items.forEach(function(it){ totalGaj+=it.stock; totalVal+=it.value; if(it.stock<=it.alert) low++; });
+    function card(title,val,color){ return '<div class="inv-card" style="cursor:default;"><div class="inv-sku" style="margin-bottom:6px;">'+title+'</div><div style="font-size:22px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'+color+';">'+val+'</div></div>'; }
+    $('fab-kpis').innerHTML =
+      card('কাপড়ের ধরন (নাম+কালার)', S.items.length, 'var(--text)') +
+      card('মোট স্টক', n2(totalGaj)+' গজ', 'var(--blue)') +
+      card('স্টক মূল্য (গড় দামে)', tk(totalVal), 'var(--gold)') +
+      card('কম স্টক', low, low>0?'var(--red)':'var(--green)');
+    var al=$('fab-low-alert');
+    if(low>0){
+      var names=S.items.filter(function(it){return it.stock<=it.alert;}).slice(0,5).map(function(it){return itemLabel(it)+' ('+n2(it.stock)+' গজ)';}).join(', ');
+      $('fab-low-text').textContent = low+'টি কাপড়ের স্টক কম: '+names+(low>5?' …':'');
+      al.style.display='block';
+    } else al.style.display='none';
+    var b=$('fab-badge'); if(b){ b.textContent = low>0?low:''; b.style.display = low>0?'':'none'; }
+  }
+
+  window.fabRenderItems = function(){
+    var q=(($('fab-search')||{}).value||'').trim().toLowerCase();
+    var rows=S.items.filter(function(it){ return !q || (it.name+' '+it.color+' '+it.id).toLowerCase().indexOf(q)>=0; });
+    var tb=$('fab-body');
+    if(!S.items.length){
+      tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:28px;">'+(S.loaded?'এখনো কোনো কাপড় যোগ করা হয়নি — “+ নতুন কাপড়” চাপুন':'ডেটা লোড হয়নি')+'</td></tr>'; return;
+    }
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:20px;">কিছু পাওয়া যায়নি</td></tr>'; return; }
+    tb.innerHTML = rows.map(function(it){
+      var st=statusOf(it), id=esc(it.id);
+      return '<tr>'+
+        '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;">'+id+'</td>'+
+        '<td><strong>'+esc(it.name)+'</strong></td>'+
+        '<td>'+(esc(it.color)||'—')+'</td>'+
+        '<td style="font-weight:700;color:'+st.c+';">'+n2(it.stock)+'</td>'+
+        '<td>'+(it.avgRate?tk(it.avgRate):'—')+'</td>'+
+        '<td>'+tk(it.value)+'</td>'+
+        '<td>'+n2(it.purchased)+'</td>'+
+        '<td>'+n2(it.used)+'</td>'+
+        '<td>'+n2(it.waste)+'</td>'+
+        '<td>'+badge(st.t,st.c)+'</td>'+
+        '<td style="white-space:nowrap;">'+
+          '<button class="btn" title="ক্রয়" onclick="fabOpenEntry(\''+id+'\',\'Purchase\')">➕</button> '+
+          '<button class="btn" title="ব্যবহার" onclick="fabOpenEntry(\''+id+'\',\'Used\')">➖</button> '+
+          '<button class="btn" title="সম্পাদনা" onclick="fabOpenItem(\''+id+'\')">✏️</button>'+
+        '</td></tr>';
+    }).join('');
+  };
+
+  window.fabRenderLedger = function(){
+    var sel=$('fab-ledger-filter'), cur=sel.value;
+    sel.innerHTML='<option value="">সব কাপড়</option>'+S.items.map(function(it){ return '<option value="'+esc(it.id)+'">'+esc(itemLabel(it))+'</option>'; }).join('');
+    sel.value = findItem(cur)?cur:'';
+    var rows=S.ledger.filter(function(l){ return !sel.value || l.itemId===sel.value; }).slice(0,100);
+    var tb=$('fab-ledger-body');
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px;">কোনো লেনদেন নেই</td></tr>'; return; }
+    tb.innerHTML = rows.map(function(l){
+      var t=TYPE[l.type]||{l:l.type,c:'var(--text2)'};
+      var det=[l.supplier,l.ref,l.note].filter(Boolean).map(esc).join(' · ');
+      return '<tr>'+
+        '<td style="white-space:nowrap;">'+esc(l.date)+'</td>'+
+        '<td>'+esc(l.itemName)+(l.color?' <span style="color:var(--text3);">— '+esc(l.color)+'</span>':'')+'</td>'+
+        '<td>'+badge(t.l,t.c)+'</td>'+
+        '<td style="font-weight:700;color:'+(l.qty>=0?'var(--green)':'var(--red)')+';">'+(l.qty>=0?'+':'')+n2(l.qty)+'</td>'+
+        '<td>'+(l.rate?tk(l.rate):'—')+'</td>'+
+        '<td>'+(l.amount?tk(l.amount):'—')+'</td>'+
+        '<td style="font-size:11px;color:var(--text2);">'+(det||'—')+'</td>'+
+        '<td><button class="btn danger" title="মুছুন" onclick="fabDeleteEntry(\''+esc(l.id)+'\')">🗑</button></td></tr>';
+    }).join('');
+  };
+
+  function renderAll(){ renderKpis(); window.fabRenderItems(); window.fabRenderLedger(); }
+
+  /* ── item modal (add / edit) ──────────────────────── */
+  window.fabOpenItem = function(id){
+    var it = id ? findItem(id) : null;
+    $('fab-i-id').value      = it?it.id:'';
+    $('fab-i-name').value    = it?it.name:'';
+    $('fab-i-color').value   = it?it.color:'';
+    $('fab-i-alert').value   = it?it.alert:5;
+    $('fab-i-supplier').value= it?it.supplier:'';
+    $('fab-i-notes').value   = it?it.notes:'';
+    $('fab-i-opening').value=''; $('fab-i-openrate').value='';
+    $('fab-i-open-g1').style.display = $('fab-i-open-g2').style.display = it?'none':'';
+    $('fab-i-title').textContent = it?'✏️ কাপড়ের তথ্য সম্পাদনা':'🧵 নতুন কাপড় যোগ করুন';
+    openModal('fabric-item');
+  };
+  window.fabSaveItem = async function(){
+    if(S.busy) return;
+    var id=$('fab-i-id').value, name=$('fab-i-name').value.trim();
+    if(!name){ showToast('কাপড়ের নাম দিন','error'); return; }
+    var opening=parseFloat($('fab-i-opening').value)||0, orate=parseFloat($('fab-i-openrate').value)||0;
+    if(!id && opening>0 && !(orate>0)){ showToast('বর্তমান স্টক দিলে গজ প্রতি দাম দিন — নইলে গড় দাম ভুল হবে','error'); return; }
+    var payload={ action:id?'fab_updateItem':'fab_addItem', id:id, name:name, color:$('fab-i-color').value.trim(),
+      alert:parseFloat($('fab-i-alert').value), supplier:$('fab-i-supplier').value.trim(), notes:$('fab-i-notes').value.trim() };
+    if(!id){ payload.opening=opening; payload.openingRate=orate; payload.date=today(); }
+    S.busy=true; var btn=$('fab-i-save'); btn.disabled=true;
+    var r=await postToAPI(payload);
+    S.busy=false; btn.disabled=false;
+    if(r){ closeModal('fabric-item'); showToast('✅ '+(id?'আপডেট হয়েছে':'কাপড় যোগ হয়েছে')); try{logAction('কাপড়: '+(id?'সম্পাদনা':'নতুন')+' — '+name);}catch(e){} await load(true); }
+  };
+
+  /* ── entry modal (purchase / use / waste / adjust) ── */
+  window.fabOpenEntry = function(itemId,type){
+    if(!S.items.length){ showToast('আগে একটি কাপড় যোগ করুন','info'); window.fabOpenItem(); return; }
+    $('fab-e-item').innerHTML = S.items.map(function(it){ return '<option value="'+esc(it.id)+'">'+esc(itemLabel(it))+' ('+n2(it.stock)+' গজ)</option>'; }).join('');
+    if(itemId && findItem(itemId)) $('fab-e-item').value=itemId;
+    $('fab-e-type').value = type||'Purchase';
+    $('fab-e-date').value = today(); $('fab-e-date').max = today();
+    ['fab-e-qty','fab-e-rate','fab-e-supplier','fab-e-ref','fab-e-note'].forEach(function(i){ $(i).value=''; });
+    var it=findItem($('fab-e-item').value); if(it && $('fab-e-type').value==='Purchase'){ $('fab-e-supplier').value=it.supplier||''; if(it.lastRate) $('fab-e-rate').value=it.lastRate; }
+    window.fabEntryChanged(); openModal('fabric-entry');
+  };
+  window.fabEntryChanged = function(){
+    var it=findItem($('fab-e-item').value), type=$('fab-e-type').value, isBuy=(type==='Purchase');
+    $('fab-e-rate-g').style.display = $('fab-e-supplier-g').style.display = isBuy?'':'none';
+    var qty=parseFloat($('fab-e-qty').value)||0, rate=parseFloat($('fab-e-rate').value)||0, h=$('fab-e-hint'), txt='';
+    if(it){
+      var sign=(type==='Purchase'||type==='AdjustIn')?1:-1, after=it.stock+sign*qty;
+      txt='বর্তমান স্টক: <strong>'+n2(it.stock)+' গজ</strong>'+(it.avgRate?' · গড় দাম: <strong>'+tk(it.avgRate)+'/গজ</strong>':'');
+      if(qty>0) txt+=' · এন্ট্রির পর স্টক: <strong>'+n2(after)+' গজ</strong>';
+      if(isBuy && qty>0 && rate>0) txt+='<br>এই ক্রয়ের মোট টাকা: <strong>'+tk(qty*rate)+'</strong>';
+      if(!isBuy && it.avgRate && qty>0) txt+='<br>খরচ ধরা হবে গড় দামে: <strong>'+tk(qty*it.avgRate)+'</strong>';
+      h.className='alert-box '+(after<0?'danger':'info');
+      if(after<0) txt+='<br>⚠ স্টকের চেয়ে বেশি বাদ দেওয়া যাবে না';
+    }
+    h.innerHTML='<div style="line-height:1.7;">'+(txt||'—')+'</div>';
+  };
+  window.fabSaveEntry = async function(){
+    if(S.busy) return;
+    var itemId=$('fab-e-item').value, type=$('fab-e-type').value, qty=parseFloat($('fab-e-qty').value), rate=parseFloat($('fab-e-rate').value);
+    var it=findItem(itemId);
+    if(!it){ showToast('কাপড় বেছে নিন','error'); return; }
+    if(!(qty>0)){ showToast('গজের পরিমাণ দিন','error'); return; }
+    if(type==='Purchase' && !(rate>=0)){ showToast('গজ প্রতি দাম দিন','error'); return; }
+    if((type==='Used'||type==='Wastage'||type==='AdjustOut') && qty>it.stock+0.0001){ showToast('স্টকে মাত্র '+n2(it.stock)+' গজ আছে','error'); return; }
+    S.busy=true; var btn=$('fab-e-save'); btn.disabled=true;
+    var r=await postToAPI({ action:'fab_entry', itemId:itemId, type:type, qty:qty, rate:rate, date:$('fab-e-date').value,
+      supplier:$('fab-e-supplier').value.trim(), ref:$('fab-e-ref').value.trim(), note:$('fab-e-note').value.trim() });
+    S.busy=false; btn.disabled=false;
+    if(r){ closeModal('fabric-entry'); showToast('✅ '+(TYPE[type]||{l:type}).l+' এন্ট্রি সেভ হয়েছে'); try{logAction('কাপড় '+(TYPE[type]||{l:type}).l+': '+itemLabel(it)+' — '+n2(qty)+' গজ');}catch(e){} await load(true); }
+  };
+
+  window.fabDeleteEntry = async function(id){
+    if(S.busy) return;
+    if(!confirm('এই লেনদেনটি মুছে ফেলবেন? স্টক ও গড় দাম আবার হিসাব হবে।')) return;
+    S.busy=true; var r=await postToAPI({ action:'fab_deleteEntry', id:id }); S.busy=false;
+    if(r){ showToast('✅ এন্ট্রি মুছে ফেলা হয়েছে'); try{logAction('কাপড়ের এন্ট্রি মুছেছেন — '+id);}catch(e){} await load(true); }
+  };
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   🏭 PRODUCTION MODULE — সাইজ চার্ট, প্রোডাকশন ব্যাচ, প্রতি পিসের খরচ
+   Independent & namespaced. Uses only existing helpers:
+   fetchFromAPI, postToAPI, openModal, closeModal, showToast, logAction.
+═══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var P = { types:[], batches:[], fabrics:[], loaded:false, busy:false };
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function n2(x){ x=Number(x)||0; return (Math.round(x*100)/100).toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function tk(x){ return '৳'+n2(x); }
+  function today(){ try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka'}).format(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } }
+  function typeById(id){ for(var i=0;i<P.types.length;i++){ if(P.types[i].id===id) return P.types[i]; } return null; }
+  function fabById(id){ for(var i=0;i<P.fabrics.length;i++){ if(P.fabrics[i].id===id) return P.fabrics[i]; } return null; }
+  function fabLabel(f){ return f.name+(f.color?' — '+f.color:''); }
+  function chip(txt){ return '<span style="display:inline-block;font-size:11px;padding:2px 8px;margin:2px 4px 2px 0;border-radius:4px;background:var(--bg3);border:1px solid var(--border);">'+txt+'</span>'; }
+
+  /* ── load ─────────────────────────────────────────── */
+  async function load(silent){
+    var d = await fetchFromAPI('prod_data',{ _:Date.now() });
+    if(!d){
+      if(!silent) showToast('প্রোডাকশন ডেটা লোড হয়নি — Google Sheets সংযোগ ও GS-এর নতুন ভার্সন Deploy করা আছে কি না দেখুন','error');
+      P.loaded=false; renderAll(); return false;
+    }
+    P.types=d.types||[]; P.batches=d.batches||[]; P.fabrics=d.fabrics||[]; P.loaded=true; renderAll(); return true;
+  }
+  window.prodOpenPage = function(){ load(); };
+
+  /* ── render ───────────────────────────────────────── */
+  function renderTypes(){
+    var box=$('pmod-types');
+    if(!P.types.length){ box.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:22px;">'+(P.loaded?'এখনো কোনো পণ্যের ধরন নেই — “+ নতুন পণ্যের ধরন” চেপে প্রথমে পাঞ্জাবির সাইজ চার্ট বানান':'ডেটা লোড হয়নি')+'</div>'; return; }
+    box.innerHTML = P.types.map(function(t){
+      var hasOv=t.sizes.some(function(s){ return s.ov && Object.keys(s.ov).length; });
+      var sizes=t.sizes.map(function(s){ return chip('<strong>'+esc(s.size)+'</strong> · '+n2(s.gaj)+' গজ'+(hasOv?' · <span style="color:var(--gold);">অন্যান্য '+tk(s.other)+'</span>':'')); }).join('');
+      var costs=t.costs.length?t.costs.map(function(c){ return chip(esc(c.n)+': '+tk(c.v)); }).join('')+'<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+(hasOv?'সাধারণ (ডিফল্ট) মোট: ':'প্রতি পিসে অন্যান্য খরচ: ')+'<strong style="color:var(--gold);">'+tk(t.otherPerPc)+'</strong>'+(hasOv?' · কিছু সাইজে আলাদা টাকা আছে (উপরের সোনালি লেখা)':'')+'</div>':'<span style="font-size:11px;color:var(--text3);">কোনো অন্যান্য খরচ দেওয়া নেই</span>';
+      return '<div class="inv-card" style="cursor:default;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><strong style="font-size:15px;">'+esc(t.name)+'</strong>'+
+        '<span style="white-space:nowrap;"><button class="btn" title="সম্পাদনা" onclick="prodOpenType(\''+esc(t.id)+'\')">✏️</button> <button class="btn danger" title="মুছুন" onclick="prodDeleteType(\''+esc(t.id)+'\')">🗑</button></span></div>'+
+        '<div style="font-size:11px;color:var(--text3);margin-bottom:2px;">সাইজ অনুযায়ী গজ'+(hasOv?' ও অন্যান্য খরচ':'')+'</div>'+sizes+
+        '<div style="font-size:11px;color:var(--text3);margin:8px 0 2px;">অন্যান্য খরচ (সাধারণ)</div>'+costs+'</div>';
+    }).join('');
+  }
+
+  function renderBatches(){
+    var tb=$('pmod-batches');
+    if(!P.batches.length){ tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px;">'+(P.loaded?'এখনো কোনো প্রোডাকশন নেই':'ডেটা লোড হয়নি')+'</td></tr>'; return; }
+    tb.innerHTML = P.batches.map(function(b){
+      var pcs=b.lines.map(function(l){ return esc(l.size)+'×'+l.qty; }).join(', ');
+      var wp=b.planned>0?(b.waste/b.planned*100):0;
+      return '<tr>'+
+        '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;">'+esc(b.id)+'</td>'+
+        '<td style="white-space:nowrap;">'+esc(b.date)+'</td>'+
+        '<td><strong>'+esc(b.typeName)+'</strong></td>'+
+        '<td>'+esc(b.fabricName)+'</td>'+
+        '<td>'+pcs+' <span style="color:var(--text3);">('+b.totalPcs+' পিস)</span></td>'+
+        '<td>'+n2(b.planned)+' / '+n2(b.actual)+'</td>'+
+        '<td style="color:'+(b.waste>0?'var(--red)':'var(--text3)')+';">'+(b.waste>0?n2(b.waste)+' গজ ('+n2(wp)+'%)':'—')+'</td>'+
+        '<td style="font-weight:700;">'+tk(b.totalCost)+'</td>'+
+        '<td style="font-weight:700;color:var(--gold);">'+tk(b.costPerPc)+'</td>'+
+        '<td><button class="btn danger" title="ব্যাচ মুছুন (কাপড়ের স্টক ফেরত আসবে)" onclick="prodDeleteBatch(\''+esc(b.id)+'\')">🗑</button></td></tr>';
+    }).join('');
+  }
+  function renderAll(){ renderTypes(); renderBatches(); }
+
+  /* ── type modal ───────────────────────────────────── */
+  var OV = {};   // সাইজ অনুযায়ী আলাদা খরচ: { sizeLower: { costName: 'value' } }
+  function ovSnapshot(){
+    Array.prototype.forEach.call(document.querySelectorAll('#prt-ov .prt-ovc'),function(i){
+      var s=i.getAttribute('data-s'), n=i.getAttribute('data-c'); OV[s]=OV[s]||{};
+      if(i.value==='') delete OV[s][n]; else OV[s][n]=i.value;
+    });
+  }
+  function ovRebuild(){
+    ovSnapshot();
+    var sizes=[], costs=[], seenS={}, seenC={};
+    Array.prototype.forEach.call(document.querySelectorAll('#prt-sizes .prt-size-row'),function(r){
+      var s=r.querySelector('.prt-s').value.trim(); if(s && !seenS[s.toLowerCase()]){ seenS[s.toLowerCase()]=1; sizes.push(s); } });
+    Array.prototype.forEach.call(document.querySelectorAll('#prt-costs .prt-cost-row'),function(r){
+      var n=r.querySelector('.prt-cn').value.trim(); if(n && !seenC[n]){ seenC[n]=1; costs.push({n:n,d:r.querySelector('.prt-cv').value}); } });
+    var box=$('prt-ov'); box.innerHTML='';
+    if(!sizes.length||!costs.length){ box.innerHTML='<div style="font-size:11px;color:var(--text3);">সাইজ ও খরচের নাম দিলে এখানে সাইজ অনুযায়ী আলাদা টাকা দেওয়ার ঘর আসবে</div>'; return; }
+    var tbl=document.createElement('table'); tbl.style.cssText='width:100%;border-collapse:collapse;font-size:12px;min-width:'+(90+costs.length*110)+'px;';
+    var hr=document.createElement('tr'), th0=document.createElement('th'); th0.textContent='সাইজ'; th0.style.cssText='text-align:left;padding:6px;'; hr.appendChild(th0);
+    costs.forEach(function(c){ var th=document.createElement('th'); th.textContent=c.n; th.style.cssText='text-align:left;padding:6px;'; hr.appendChild(th); });
+    tbl.appendChild(hr);
+    sizes.forEach(function(s){
+      var tr=document.createElement('tr'), td0=document.createElement('td'); td0.innerHTML='<strong></strong>'; td0.firstChild.textContent=s; td0.style.cssText='padding:4px 6px;'; tr.appendChild(td0);
+      var key=s.toLowerCase();
+      costs.forEach(function(c){
+        var td=document.createElement('td'), inp=document.createElement('input');
+        inp.type='number'; inp.min='0'; inp.step='0.01'; inp.className='form-input prt-ovc'; inp.style.cssText='width:100%;padding:5px 8px;font-size:12px;';
+        inp.setAttribute('data-s',key); inp.setAttribute('data-c',c.n);
+        inp.placeholder = c.d!==''?('সাধারণ '+c.d):'সাধারণ ০';
+        if(OV[key] && OV[key][c.n]!==undefined) inp.value=OV[key][c.n];
+        td.style.cssText='padding:4px 6px;'; td.appendChild(inp); tr.appendChild(td);
+      });
+      tbl.appendChild(tr);
+    });
+    box.appendChild(tbl);
+  }
+  function sizeRow(size,gaj){
+    var d=document.createElement('div'); d.className='prt-size-row'; d.style.cssText='display:flex;gap:6px;margin-bottom:6px;';
+    d.innerHTML='<input class="form-input prt-s" type="text" maxlength="12" placeholder="সাইজ (M / 38)" style="flex:1;" value="'+esc(size||'')+'">'+
+                '<input class="form-input prt-g" type="number" min="0" step="0.01" placeholder="গজ" style="flex:1;" value="'+(gaj!=null&&gaj!==''?esc(gaj):'')+'">'+
+                '<button class="btn danger" type="button" title="বাদ দিন">✕</button>';
+    d.lastChild.onclick=function(){ d.remove(); ovRebuild(); };
+    $('prt-sizes').appendChild(d);
+  }
+  function costRow(name,val){
+    var d=document.createElement('div'); d.className='prt-cost-row'; d.style.cssText='display:flex;gap:6px;margin-bottom:6px;';
+    d.innerHTML='<input class="form-input prt-cn" type="text" maxlength="40" placeholder="খরচের নাম (যেমন: সেলাই)" style="flex:2;" value="'+esc(name||'')+'">'+
+                '<input class="form-input prt-cv" type="number" min="0" step="0.01" placeholder="সাধারণ ৳ প্রতি পিস" style="flex:1;" value="'+(val!=null&&val!==''?esc(val):'')+'">'+
+                '<button class="btn danger" type="button" title="বাদ দিন">✕</button>';
+    d.lastChild.onclick=function(){ d.remove(); ovRebuild(); };
+    $('prt-costs').appendChild(d);
+  }
+  $('prt-sizes').addEventListener('change',ovRebuild);   // সাইজের নাম বদলালে গ্রিড আপডেট
+  $('prt-costs').addEventListener('change',ovRebuild);   // খরচের নাম/সাধারণ টাকা বদলালে গ্রিড আপডেট
+  window.prodAddSizeRow = function(){ sizeRow('',''); ovRebuild(); };
+  window.prodAddCostRow = function(){ costRow('',''); ovRebuild(); };
+  window.prodPreset = function(list){
+    var have={}; Array.prototype.forEach.call(document.querySelectorAll('#prt-sizes .prt-s'),function(i){ have[i.value.trim().toLowerCase()]=1; });
+    Array.prototype.forEach.call(document.querySelectorAll('#prt-sizes .prt-size-row'),function(r){ if(!r.querySelector('.prt-s').value.trim()&&!r.querySelector('.prt-g').value) r.remove(); });
+    list.split(',').forEach(function(s){ if(!have[s.toLowerCase()]) sizeRow(s,''); });
+    ovRebuild();
+  };
+  window.prodOpenType = function(id){
+    var t=id?typeById(id):null;
+    $('prt-id').value=t?t.id:''; $('prt-name').value=t?t.name:''; $('prt-notes').value=t?(t.notes||''):'';
+    $('prt-sizes').innerHTML=''; $('prt-costs').innerHTML=''; $('prt-ov').innerHTML=''; OV={};
+    if(t){
+      t.sizes.forEach(function(s){ sizeRow(s.size,s.gaj); var k=s.size.toLowerCase(); OV[k]={}; Object.keys(s.ov||{}).forEach(function(n){ OV[k][n]=String(s.ov[n]); }); });
+      t.costs.forEach(function(c){ costRow(c.n,c.v); });
+      if(!t.costs.length) costRow('','');
+    } else { sizeRow('',''); ['সেলাই','বোতাম / লাইনিং','প্যাকেজিং','অন্যান্য'].forEach(function(n){ costRow(n,''); }); }
+    ovRebuild();
+    $('prt-title').textContent = t?'✏️ পণ্যের ধরন সম্পাদনা':'🏭 নতুন পণ্যের ধরন';
+    openModal('prod-type');
+  };
+  window.prodSaveType = async function(){
+    if(P.busy) return;
+    var name=$('prt-name').value.trim(); if(!name){ showToast('পণ্যের ধরনের নাম দিন','error'); return; }
+    ovSnapshot();
+    var sizes=[], rawCosts=[], bad='';
+    Array.prototype.forEach.call(document.querySelectorAll('#prt-sizes .prt-size-row'),function(r){
+      var s=r.querySelector('.prt-s').value.trim(), g=parseFloat(r.querySelector('.prt-g').value);
+      if(!s && isNaN(g)) return;
+      if(!s){ bad='সাইজের নাম দিন'; return; }
+      if(!(g>0)){ bad='সাইজ "'+s+'"-এর গজ দিন'; return; }
+      sizes.push({size:s,gaj:g,ov:{}});
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#prt-costs .prt-cost-row'),function(r){
+      rawCosts.push({n:r.querySelector('.prt-cn').value.trim(), v:r.querySelector('.prt-cv').value});
+    });
+    if(bad){ showToast(bad,'error'); return; }
+    if(!sizes.length){ showToast('অন্তত একটি সাইজ ও গজ দিন','error'); return; }
+    var costs=[];
+    rawCosts.forEach(function(c){
+      if(!c.n && c.v===''){ return; }
+      if(!c.n){ bad='খরচের নাম দিন'; return; }
+      var hasOv=sizes.some(function(s){ var o=OV[s.size.toLowerCase()]; return o && o[c.n]!==undefined && o[c.n]!==''; });
+      if(c.v==='' && !hasOv) return;                      // সাধারণ টাকাও নেই, আলাদা টাকাও নেই = বাদ
+      var d=c.v===''?0:parseFloat(c.v);
+      if(isNaN(d)||d<0){ bad='"'+c.n+'" খরচের টাকা সঠিক দিন'; return; }
+      costs.push({name:c.n,value:d});
+    });
+    if(bad){ showToast(bad,'error'); return; }
+    sizes.forEach(function(s){
+      var o=OV[s.size.toLowerCase()]||{};
+      costs.forEach(function(c){ var v=o[c.name]; if(v!==undefined && v!==''){ var f=parseFloat(v); if(isNaN(f)||f<0){ bad='সাইজ "'+s.size+'"-এর "'+c.name+'" টাকা সঠিক দিন'; } else s.ov[c.name]=f; } });
+    });
+    if(bad){ showToast(bad,'error'); return; }
+    P.busy=true; var btn=$('prt-save'); btn.disabled=true;
+    var r=await postToAPI({ action:'prod_saveType', id:$('prt-id').value, name:name, sizes:sizes, costs:costs, notes:$('prt-notes').value.trim() });
+    P.busy=false; btn.disabled=false;
+    if(r){ closeModal('prod-type'); showToast('✅ সাইজ চার্ট সেভ হয়েছে'); try{logAction('প্রোডাকশন: পণ্যের ধরন সেভ — '+name);}catch(e){} await load(true); }
+  };
+  window.prodDeleteType = async function(id){
+    if(P.busy) return; var t=typeById(id); if(!t) return;
+    if(!confirm('"'+t.name+'" মুছে ফেলবেন? (প্রোডাকশন ব্যাচ থাকলে মোছা যাবে না)')) return;
+    P.busy=true; var r=await postToAPI({ action:'prod_deleteType', id:id }); P.busy=false;
+    if(r){ showToast('✅ মুছে ফেলা হয়েছে'); await load(true); }
+  };
+
+  /* ── batch modal ──────────────────────────────────── */
+  window.prodOpenBatch = function(){
+    if(!P.types.length){ showToast('আগে একটি পণ্যের ধরন ও সাইজ চার্ট বানান','info'); window.prodOpenType(); return; }
+    if(!P.fabrics.length){ showToast('আগে “কাপড়ের স্টক” পেজে কাপড় যোগ করুন ও ক্রয় এন্ট্রি দিন','info'); return; }
+    $('pb-fabric').innerHTML=P.fabrics.map(function(f){ return '<option value="'+esc(f.id)+'">'+esc(fabLabel(f))+' ('+n2(f.stock)+' গজ)</option>'; }).join('');
+    $('pb-type').innerHTML=P.types.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
+    $('pb-date').value=today(); $('pb-date').max=today(); $('pb-note').value=''; $('pb-actual').value='';
+    window.prodBatchType(); openModal('prod-batch');
+  };
+  window.prodBatchType = function(){
+    var t=typeById($('pb-type').value), box=$('pb-sizes'); $('pb-actual').value='';
+    box.innerHTML = t ? t.sizes.map(function(s){
+      return '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;">'+
+        '<div style="font-size:12px;margin-bottom:4px;"><strong>'+esc(s.size)+'</strong> <span style="color:var(--text3);">· '+n2(s.gaj)+' গজ</span></div>'+
+        '<input class="form-input pb-q" type="number" min="0" step="1" placeholder="পিস" data-size="'+esc(s.size)+'" data-gaj="'+s.gaj+'" data-other="'+(s.other||0)+'" style="width:100%;" oninput="prodBatchCalc()"></div>';
+    }).join('') : '';
+    window.prodBatchCalc();
+  };
+  function readLines(){
+    var out=[]; Array.prototype.forEach.call(document.querySelectorAll('#pb-sizes .pb-q'),function(i){
+      var q=Math.round(parseFloat(i.value)||0); if(q>0) out.push({size:i.getAttribute('data-size'),qty:q,gaj:parseFloat(i.getAttribute('data-gaj')),other:parseFloat(i.getAttribute('data-other'))||0});
+    }); return out;
+  }
+  window.prodBatchCalc = function(){
+    var t=typeById($('pb-type').value), f=fabById($('pb-fabric').value), box=$('pb-summary'), lines=readLines();
+    if(!t||!f){ box.innerHTML='—'; return; }
+    var pcs=0, planned=0, otherSum=0; lines.forEach(function(l){ pcs+=l.qty; planned+=l.qty*l.gaj; otherSum+=l.qty*l.other; });
+    if(!pcs){ box.className='alert-box info'; box.innerHTML='<div>সাইজ অনুযায়ী পিস সংখ্যা দিন — মোট গজ ও খরচ এখানে দেখাবে।<br>কাপড়ের বর্তমান স্টক: <strong>'+n2(f.stock)+' গজ</strong>'+(f.avgRate?' · গড় দাম: <strong>'+tk(f.avgRate)+'/গজ</strong>':'')+'</div>'; return; }
+    var av=$('pb-actual').value.trim(), actual=av===''?planned:(parseFloat(av)||0);
+    var waste=Math.max(0,actual-planned), factor=planned>0?actual/planned:1;
+    var fabCost=actual*f.avgRate, other=otherSum, total=fabCost+other;
+    var over=actual>f.stock+0.0001, h='';
+    h+='মোট <strong>'+pcs+' পিস</strong> · পরিকল্পিত কাপড়: <strong>'+n2(planned)+' গজ</strong>';
+    if(av!=='') h+=' · ব্যবহৃত: <strong>'+n2(actual)+' গজ</strong>'+(waste>0?' (অপচয় <strong>'+n2(waste)+' গজ</strong>, '+n2(planned>0?waste/planned*100:0)+'%)':'');
+    h+='<br>কাপড়ের স্টক: '+n2(f.stock)+' গজ → ব্যাচের পর: <strong>'+n2(f.stock-actual)+' গজ</strong>';
+    if(over) h+='<br>⚠ স্টকে যথেষ্ট কাপড় নেই (আরও '+n2(actual-f.stock)+' গজ দরকার)';
+    if(!f.avgRate) h+='<br>⚠ এই কাপড়ের কোনো ক্রয় এন্ট্রি নেই, তাই কাপড়ের খরচ ৳০ ধরা হবে';
+    h+='<br>কাপড়ের খরচ: <strong>'+tk(fabCost)+'</strong> + অন্যান্য: <strong>'+tk(other)+'</strong> = মোট <strong>'+tk(total)+'</strong>';
+    h+='<br>গড় খরচ প্রতি পিস: <strong style="color:var(--gold);">'+tk(total/pcs)+'</strong>';
+    h+='<div style="margin-top:6px;">'+lines.map(function(l){ return chip(esc(l.size)+': '+tk(l.gaj*f.avgRate*factor+l.other)+'/পিস'); }).join('')+'</div>';
+    box.className='alert-box '+(over?'danger':'info'); box.innerHTML='<div style="line-height:1.7;">'+h+'</div>';
+  };
+  window.prodSaveBatch = async function(){
+    if(P.busy) return;
+    var f=fabById($('pb-fabric').value), t=typeById($('pb-type').value), lines=readLines();
+    if(!f||!t){ showToast('কাপড় ও পণ্যের ধরন বেছে নিন','error'); return; }
+    if(!lines.length){ showToast('অন্তত একটি সাইজের পিস সংখ্যা দিন','error'); return; }
+    var planned=0; lines.forEach(function(l){ planned+=l.qty*l.gaj; });
+    var av=$('pb-actual').value.trim(), actual=av===''?planned:(parseFloat(av)||0);
+    if(!(actual>0)){ showToast('ব্যবহৃত গজ সঠিক দিন','error'); return; }
+    if(actual>f.stock+0.0001){ showToast('স্টকে মাত্র '+n2(f.stock)+' গজ আছে','error'); return; }
+    P.busy=true; var btn=$('pb-save'); btn.disabled=true;
+    var r=await postToAPI({ action:'prod_addBatch', fabricId:f.id, typeId:t.id, date:$('pb-date').value,
+      lines:lines.map(function(l){ return {size:l.size,qty:l.qty}; }), actualGaj:av===''?'':actual, note:$('pb-note').value.trim() });
+    P.busy=false; btn.disabled=false;
+    if(r){ closeModal('prod-batch'); showToast('✅ প্রোডাকশন সেভ হয়েছে — কাপড় বাদ গেছে'); try{logAction('প্রোডাকশন: '+t.name+' — '+fabLabel(f)+' — '+n2(actual)+' গজ');}catch(e){} await load(true); }
+  };
+  window.prodDeleteBatch = async function(id){
+    if(P.busy) return;
+    if(!confirm('এই প্রোডাকশন ব্যাচ মুছে ফেলবেন? কাপড়ের গজ স্টকে ফেরত আসবে।')) return;
+    P.busy=true; var r=await postToAPI({ action:'prod_deleteBatch', id:id }); P.busy=false;
+    if(r){ showToast('✅ ব্যাচ মুছে ফেলা হয়েছে — কাপড়ের স্টক ফেরত এসেছে'); try{logAction('প্রোডাকশন ব্যাচ মুছেছেন — '+id);}catch(e){} await load(true); }
   };
 })();
 </script>
