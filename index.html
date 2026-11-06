@@ -2559,6 +2559,7 @@ tbody td.muted{color:var(--text3);}
       <div class="alert-box danger" id="inv-low-alert" style="display:none;">⚠️ <strong id="inv-low-alert-text">—</strong></div>
 
       <div class="inv-grid" id="inv-cards"></div>
+      <div id="inv-variant-groups" style="display:none;margin-bottom:16px;"></div>
 
       <div class="table-wrapper">
         <div class="table-header">
@@ -2611,17 +2612,27 @@ tbody td.muted{color:var(--text3);}
 
       <div class="table-wrapper" style="margin-top:20px;">
         <div class="table-header">
+          <span class="table-title">👕 তৈরি পণ্যের স্টক (কালার × সাইজ)</span>
+          <div class="table-actions"><button class="btn" onclick="prodOpenPage()">🔄 রিফ্রেশ</button>
+            <button class="btn export-excel" onclick="prodExportStock()">📥 Excel (CSV)</button></div>
+        </div>
+        <div id="pmod-stock" style="padding:14px;"></div>
+      </div>
+
+      <div class="table-wrapper" style="margin-top:20px;">
+        <div class="table-header">
           <span class="table-title">প্রোডাকশন ব্যাচ (সর্বশেষ ২০০টি)</span>
           <div class="table-actions">
             <button class="btn success" onclick="prodOpenBatch()">➕ নতুন প্রোডাকশন</button>
+            <button class="btn export-excel" onclick="prodExportBatches()">📥 Excel (CSV)</button>
           </div>
         </div>
         <div class="table-scroll">
           <table>
             <thead>
-              <tr><th>ব্যাচ</th><th>তারিখ</th><th>পণ্য</th><th>কাপড়</th><th>পিস (সাইজ অনুযায়ী)</th><th>গজ (পরিকল্পিত/ব্যবহৃত)</th><th>অপচয়</th><th>মোট খরচ</th><th>গড় খরচ/পিস</th><th></th></tr>
+              <tr><th>ব্যাচ</th><th>তারিখ</th><th>পণ্য</th><th>কাপড়</th><th>পিস (সাইজ অনুযায়ী)</th><th>গজ (পরিকল্পিত/ব্যবহৃত)</th><th>অপচয়</th><th>মোট খরচ</th><th>গড় খরচ/পিস</th><th>বিক্রির স্টক</th><th></th></tr>
             </thead>
-            <tbody id="pmod-batches"><tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px;">লোড হচ্ছে…</td></tr></tbody>
+            <tbody id="pmod-batches"><tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px;">লোড হচ্ছে…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -2649,6 +2660,7 @@ tbody td.muted{color:var(--text3);}
             <button class="btn primary" onclick="fabOpenItem()">+ নতুন কাপড়</button>
             <button class="btn success" onclick="fabOpenEntry('','Purchase')">➕ ক্রয় (গজ যোগ)</button>
             <button class="btn danger" onclick="fabOpenEntry('','Used')">➖ ব্যবহার</button>
+            <button class="btn export-excel" onclick="fabExportItems()">📥 Excel (CSV)</button>
           </div>
         </div>
         <div class="table-scroll">
@@ -2670,6 +2682,7 @@ tbody td.muted{color:var(--text3);}
           <span class="table-title">লেনদেনের ইতিহাস (সর্বশেষ ১০০টি)</span>
           <div class="table-actions">
             <select class="form-select" id="fab-ledger-filter" onchange="fabRenderLedger()" style="width:220px;padding:6px 10px;font-size:12px;"><option value="">সব কাপড়</option></select>
+            <button class="btn export-excel" onclick="fabExportLedger()">📥 Excel (CSV)</button>
           </div>
         </div>
         <div class="table-scroll">
@@ -4021,94 +4034,31 @@ tbody td.muted{color:var(--text3);}
           </div>
         </div>
 
-        <!-- Base Price -->
+        <!-- Products -->
         <div class="calc-card">
-          <div class="calc-card-title">🏷️ বেস প্রাইস</div>
-          <div class="calc-field">
-            <label>অর্ডার টাইপ</label>
-            <select id="calc-order-type" onchange="calcHandleOrderType()">
-              <option value="5599">রেগুলার প্রাইস — ৳ ৫,৫৯৯</option>
-              <option value="3999" selected>লঞ্চিং অফার — ৳ ৩,৯৯৯</option>
-              <option value="3599">প্রিঅর্ডার (৫০০ অ্যাডভান্স) — ৳ ৩,৫৯৯</option>
-              <option value="custom">কাস্টম — নিজে টাইপ করুন</option>
-            </select>
-          </div>
-          <div class="calc-field calc-hidden" id="calc-custom-price-wrap">
-            <label>কাস্টম বেস প্রাইস (৳)</label>
-            <input type="number" id="calc-custom-price" placeholder="যেমন: 4500" min="0" oninput="calcRun()">
-          </div>
+          <div class="calc-card-title">👕 পণ্য</div>
+          <datalist id="calc-products"></datalist>
+          <div id="calc-lines"></div>
+          <button type="button" class="btn" onclick="calcAddLine()" style="margin-top:6px;">+ আরেকটা পণ্য</button>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;">পণ্যের নামের ঘরে ক্লিক করলে ইনভেন্টরির তালিকা আসবে — বাছলে দাম নিজে বসে যাবে (দাম বদলানো যায়)।</div>
         </div>
 
-        <!-- Doors -->
+        <!-- Discount -->
         <div class="calc-card">
-          <div class="calc-card-title">🚪 দরজার সংখ্যা</div>
-          <div class="calc-field">
-            <label>মোট দরজা কতটি?</label>
-            <select id="calc-door-count" onchange="calcHandleDoors()">
-              <option value="1">১টি দরজা</option>
-              <option value="2">২টি দরজা</option>
-              <option value="3">৩টি দরজা</option>
-              <option value="4">৪টি দরজা</option>
-              <option value="5">৫টি দরজা</option>
-              <option value="6">৬টি দরজা</option>
-              <option value="7">৭টি দরজা</option>
-              <option value="8">৮টি দরজা</option>
-              <option value="9">৯টি দরজা</option>
-              <option value="10">১০টি দরজা</option>
-              <option value="custom">১০ এর বেশি</option>
-            </select>
-          </div>
-          <div class="calc-field calc-hidden" id="calc-custom-door-wrap">
-            <label>দরজার সংখ্যা লিখুন</label>
-            <input type="number" id="calc-custom-door" placeholder="যেমন: 15" min="11" oninput="calcRun()">
-          </div>
-          <div class="calc-field">
-            <label>প্রতিটি অতিরিক্ত দরজার দাম (৳)</label>
-            <input type="number" id="calc-door-price" value="300" min="0" oninput="calcRun()">
-          </div>
-        </div>
-
-        <!-- Wire -->
-        <div class="calc-card">
-          <div class="calc-card-title">🔌 তারের হিসাব</div>
-          <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:14px;border:1px solid var(--border);">
-            <div class="calc-toggle-row">
-              <div>
-                <div class="calc-toggle-label">১০০ ফিট তার ফ্রি</div>
-                <div class="calc-toggle-sub" id="calc-free-wire-sub">চালু আছে — ১০০ ফিট বিনামূল্যে</div>
-              </div>
-              <label class="calc-switch">
-                <input type="checkbox" id="calc-free-wire-toggle" checked onchange="calcHandleFreeWire()">
-                <span class="calc-slider"></span>
-              </label>
-            </div>
-          </div>
-          <div style="font-size:12px;font-weight:500;color:var(--text3);margin-bottom:6px;">তার মাপের একক</div>
-          <div class="calc-unit-tabs">
-            <button class="calc-utab active" id="calc-tab-ft" onclick="calcSetUnit('ft')">ফিট (ft)</button>
-            <button class="calc-utab" id="calc-tab-mt" onclick="calcSetUnit('mt')">মিটার (m)</button>
-          </div>
-          <div class="calc-field">
-            <label id="calc-wire-amt-label">কাস্টমারের মোট তার লাগবে (ফিট)</label>
-            <div class="calc-wire-input-wrap">
-              <input type="number" id="calc-wire-amount" value="100" min="0" oninput="calcRun()">
-              <span class="calc-wire-unit-badge" id="calc-wire-unit-badge">ft</span>
-            </div>
-          </div>
+          <div class="calc-card-title">🏷️ ডিসকাউন্ট (ঐচ্ছিক)</div>
           <div class="calc-wire-grid">
             <div class="calc-field">
-              <label id="calc-wire-price-label">তারের দাম — প্রতি ফিট (৳)</label>
-              <input type="number" id="calc-wire-price" value="5" min="0" step="0.5" oninput="calcRun()">
+              <label>ধরন</label>
+              <select id="calc-disc-type" onchange="calcRun()">
+                <option value="none">ডিসকাউন্ট নেই</option>
+                <option value="tk">টাকা (৳)</option>
+                <option value="pct">শতাংশ (%)</option>
+              </select>
             </div>
             <div class="calc-field">
-              <label>মোট তারের খরচ</label>
-              <input type="text" id="calc-wire-cost-display" readonly style="background:var(--card-bg2);color:var(--green);font-weight:600;cursor:default;">
+              <label>পরিমাণ</label>
+              <input type="number" id="calc-disc-val" min="0" placeholder="0" oninput="calcRun()">
             </div>
-          </div>
-          <div class="calc-wire-info">
-            ফ্রি: <strong id="calc-wi-free">১০০ ফিট</strong> &nbsp;|&nbsp;
-            অতিরিক্ত: <strong id="calc-wi-extra">০ ফিট</strong> &nbsp;|&nbsp;
-            খরচ: <strong id="calc-wi-cost" style="color:var(--green);">৳ ০</strong>
           </div>
         </div>
 
@@ -4130,23 +4080,24 @@ tbody td.muted{color:var(--text3);}
           </div>
         </div>
 
+        <!-- Advance -->
+        <div class="calc-card">
+          <div class="calc-card-title">💵 অগ্রিম / জমা (ঐচ্ছিক)</div>
+          <div class="calc-field">
+            <label>অগ্রিম পেয়েছেন (৳) — না থাকলে ফাঁকা রাখুন</label>
+            <input type="number" id="calc-advance" min="0" placeholder="0" oninput="calcRun()">
+          </div>
+        </div>
+
         <!-- Result -->
         <div class="calc-result">
           <div class="calc-r-row">
-            <span class="calc-r-label">বেস প্রাইস</span>
-            <span class="calc-r-val" id="calc-r-base">৳ 3,999</span>
+            <span class="calc-r-label">পণ্যের মোট</span>
+            <span class="calc-r-val" id="calc-r-sub">৳ 0</span>
           </div>
-          <div class="calc-r-row" id="calc-r-door-row">
-            <span class="calc-r-label" id="calc-r-door-label">অতিরিক্ত দরজা</span>
-            <span class="calc-r-val" id="calc-r-door-val">৳ 0</span>
-          </div>
-          <div class="calc-r-row" id="calc-r-free-row">
-            <span class="calc-r-label calc-r-green">ফ্রি তার</span>
-            <span class="calc-r-val calc-r-green">১০০ ফিট</span>
-          </div>
-          <div class="calc-r-row" id="calc-r-wire-row">
-            <span class="calc-r-label" id="calc-r-wire-label">অতিরিক্ত তার</span>
-            <span class="calc-r-val" id="calc-r-wire-val">৳ 0</span>
+          <div class="calc-r-row" id="calc-r-disc-row">
+            <span class="calc-r-label calc-r-green" id="calc-r-disc-label">ডিসকাউন্ট</span>
+            <span class="calc-r-val calc-r-green" id="calc-r-disc-val">৳ 0</span>
           </div>
           <div class="calc-r-row">
             <span class="calc-r-label" id="calc-r-delivery-label">ডেলিভারি</span>
@@ -4154,7 +4105,15 @@ tbody td.muted{color:var(--text3);}
           </div>
           <div class="calc-r-total">
             <span class="calc-r-total-lbl">মোট</span>
-            <span class="calc-r-total-val" id="calc-r-total">৳ 4,149</span>
+            <span class="calc-r-total-val" id="calc-r-total">৳ 150</span>
+          </div>
+          <div class="calc-r-row" id="calc-r-adv-row" style="margin-top:8px;">
+            <span class="calc-r-label">অগ্রিম</span>
+            <span class="calc-r-val" id="calc-r-adv-val">৳ 0</span>
+          </div>
+          <div class="calc-r-row" id="calc-r-due-row">
+            <span class="calc-r-label">বাকি (ডেলিভারির সময়)</span>
+            <span class="calc-r-val calc-r-green" id="calc-r-due-val">৳ 150</span>
           </div>
         </div>
 
@@ -5043,6 +5002,23 @@ tbody td.muted{color:var(--text3);}
         <div class="form-group full"><label class="form-label">Full Address</label><textarea class="form-input" id="order-address" rows="3" placeholder="House, Road, Area..." style="min-height:72px;resize:vertical;line-height:1.5;font-family:inherit;"></textarea></div>
         <!-- ✅ FIX (Multi-product order, Sept 2026): একাধিক প্রোডাক্ট একই অর্ডারে যোগ করার জন্য
              ডাইনামিক লাইন-আইটেম লিস্ট — প্রতিটা প্রোডাক্টের নিজস্ব দাম/কোয়ান্টিটি -->
+        <div class="form-group full" id="vq-box" style="display:none;">
+          <label class="form-label">👕 দ্রুত সিলেক্ট — তৈরি পণ্য (পণ্য → কালার → সাইজ)</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            <select class="form-select" id="vq-type" onchange="vqType()" style="flex:1 1 140px;"></select>
+            <select class="form-select" id="vq-color" onchange="vqColor()" style="flex:1 1 140px;"></select>
+            <select class="form-select" id="vq-size" onchange="vqHint()" style="flex:1 1 110px;"></select>
+            <input class="form-input" id="vq-qty" type="number" min="1" value="1" oninput="vqHint()" style="flex:0 0 80px;" title="পরিমাণ">
+            <button type="button" class="btn primary" onclick="vqAdd()" style="padding:8px 14px;">➕ যোগ</button>
+          </div>
+          <div id="vq-hint" style="font-size:12px;color:var(--text3);margin-top:6px;"></div>
+          <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-top:8px;cursor:pointer;"><input type="checkbox" id="vq-set" onchange="vqSetToggle()"> 🧥 সেট হিসেবে যোগ করুন (সাথে দ্বিতীয় পণ্য — যেমন পাঞ্জাবি + পায়জামা)</label>
+          <div id="vq-row2" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px;">
+            <select class="form-select" id="vq-type2" onchange="vqType('2')" style="flex:1 1 140px;"></select>
+            <select class="form-select" id="vq-color2" onchange="vqColor('2')" style="flex:1 1 140px;"></select>
+            <select class="form-select" id="vq-size2" onchange="vqHint()" style="flex:1 1 110px;"></select>
+          </div>
+        </div>
         <div class="form-group full">
           <label class="form-label">Products *</label>
           <div id="order-items-list"></div>
@@ -5187,11 +5163,12 @@ tbody td.muted{color:var(--text3);}
     <div class="modal-body">
       <input type="hidden" id="prt-id">
       <div class="form-grid">
-        <div class="form-group full"><label class="form-label">পণ্যের ধরন *</label><input class="form-input" id="prt-name" type="text" maxlength="60" placeholder="যেমন: Panjabi, Pajama, Shirt"></div>
+        <div class="form-group"><label class="form-label">পণ্যের ধরন *</label><input class="form-input" id="prt-name" type="text" maxlength="60" placeholder="যেমন: Panjabi, Pajama, Shirt"></div>
+        <div class="form-group"><label class="form-label">ইনভেন্টরি ক্যাটাগরি</label><input class="form-input" id="prt-cat" type="text" list="prod-cat-datalist" maxlength="60" placeholder="যেমন: Panjabi &amp; Ethnic Wear"></div>
       </div>
 
       <div style="margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-        <label class="form-label" style="margin:0;">সাইজ ও প্রতি পিসে গজ *</label>
+        <label class="form-label" style="margin:0;">সাইজ, প্রতি পিসে গজ ও বিক্রয় মূল্য (৳, ঐচ্ছিক) *</label>
         <span style="font-size:11px;color:var(--text3);">দ্রুত সাইজ:
           <button class="btn" style="padding:2px 8px;font-size:11px;" onclick="prodPreset('S,M,L,XL,XXL')">S M L XL XXL</button>
           <button class="btn" style="padding:2px 8px;font-size:11px;" onclick="prodPreset('36,38,40,42,44')">36–44</button>
@@ -5227,7 +5204,7 @@ tbody td.muted{color:var(--text3);}
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label class="form-label">কাপড় *</label><select class="form-select" id="pb-fabric" onchange="prodBatchCalc()"></select></div>
+        <div class="form-group"><label class="form-label">কাপড় *</label><select class="form-select" id="pb-fabric" onchange="prodBatchFabric()"></select></div>
         <div class="form-group"><label class="form-label">পণ্যের ধরন *</label><select class="form-select" id="pb-type" onchange="prodBatchType()"></select></div>
         <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" id="pb-date" type="date"></div>
         <div class="form-group"><label class="form-label">নোট</label><input class="form-input" id="pb-note" type="text" maxlength="200" placeholder="Optional"></div>
@@ -5239,11 +5216,37 @@ tbody td.muted{color:var(--text3);}
       <div class="form-grid" style="margin-top:12px;">
         <div class="form-group"><label class="form-label">আসলে কত গজ কাটা হলো (ঐচ্ছিক)</label><input class="form-input" id="pb-actual" type="number" min="0" step="0.01" placeholder="খালি রাখলে পরিকল্পিত গজই ধরা হবে" oninput="prodBatchCalc()"></div>
       </div>
+      <div class="form-grid" style="margin-top:10px;">
+        <div class="form-group full"><label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:13px;"><input type="checkbox" id="pb-stockin" checked onchange="prodBatchHints()"> তৈরি পিস বিক্রির স্টকে (Inventory) যোগ করুন</label></div>
+        <div class="form-group" id="pb-color-g"><label class="form-label">বিক্রির কালার / ভ্যারিয়েন্ট নাম *</label><input class="form-input" id="pb-color" type="text" maxlength="40" placeholder="যেমন: Navy Blue" oninput="prodBatchHints()"></div>
+      </div>
       <div class="alert-box info" id="pb-summary" style="margin-top:12px;">—</div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('prod-batch')">Cancel</button>
       <button class="btn primary" id="pb-save" onclick="prodSaveBatch()">💾 প্রোডাকশন সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-prod-stockin">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📦 তৈরি পিস বিক্রির স্টকে যোগ করুন</span>
+      <button class="modal-close" onclick="closeModal('prod-stockin')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="psi-id">
+      <div class="alert-box info" id="psi-info" style="margin-bottom:12px;">—</div>
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">বিক্রির কালার / ভ্যারিয়েন্ট নাম *</label><input class="form-input" id="psi-color" type="text" maxlength="40" placeholder="যেমন: Navy Blue" oninput="prodStockInHints()"></div>
+      </div>
+      <div style="margin:12px 0 6px;"><label class="form-label" style="margin:0;">বিক্রয় মূল্য (৳) — শুধু নতুন ভ্যারিয়েন্টের জন্য</label></div>
+      <div id="psi-sizes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('prod-stockin')">Cancel</button>
+      <button class="btn primary" id="psi-save" onclick="prodSaveStockIn()">📦 স্টকে যোগ করুন</button>
     </div>
   </div>
 </div>
@@ -6138,7 +6141,7 @@ tbody td.muted{color:var(--text3);}
 // ═══════════════════════════════════════════════════════════════
 
 // ⚠️ এখানে আপনার Google Apps Script Web App URL বসান (Deploy > New Deployment > Web App)
-      const API_URL = "https://script.google.com/macros/s/AKfycbwm8wRsSNdnt5NmjzQoMq3ePGxTRTDHQ5DyvrmPsj_1qWojI5PlifbkYgavRUx4gO1l/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
+      const API_URL = "https://script.google.com/macros/s/AKfycbyN6P54FTs73S2r-k2D0Hi2zVcaSURK8FlX_sfHSb9YoygAqdL1Ux101JbuSuOO0XCr/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
 
 // ─── CONNECTION STATE ────────────────────────────────────────
 let apiConnected = false;
@@ -12103,14 +12106,17 @@ function parseOrderRegex(text){
   // ── Product match ── ✅ FIX (Multi-product order): প্রথম আইটেম-লাইনে বসাও
   {
     const names = window._orderProductNames || [];
-    const matched = names.find(name=>{
-      const nl = name.toLowerCase();
-      const words = nl.split(' ');
-      return words.some(w=>w.length>3 && tl.includes(w)) ||
-             (tl.includes('cctv') && nl.includes('cctv')) ||
-             (tl.includes('door lock') && nl.includes('door')) ||
-             (tl.includes('alarm') && nl.includes('alarm')) ||
-             tl.includes('সিকিউরিটি') || tl.includes('security');
+    // সবচেয়ে বেশি শব্দ মিললে সেটাই (ভ্যারিয়েন্ট নাম "Panjabi - Navy Blue - M"-এ কালার/সাইজ মিলিয়ে আলাদা করা যায়)
+    const _tok = new Set(tl.split(/[^a-z0-9\u0980-\u09FF]+/).filter(Boolean));
+    let matched = null, _best = 0;
+    names.forEach(name=>{
+      let sc = 0, long = 0;
+      name.toLowerCase().split(/[\s\-]+/).forEach(w=>{
+        if(!w) return;
+        if(w.length>3 && tl.includes(w)){ sc+=2; long++; }
+        else if(w.length<=3 && _tok.has(w)){ sc+=1; }
+      });
+      if(long>0 && sc>_best){ _best=sc; matched=name; }
     });
     if(matched && Array.isArray(window._orderItems) && window._orderItems.length){
       window._orderItems[0].product = matched;
@@ -12129,27 +12135,9 @@ function parseOrderRegex(text){
     const noteLabeled = text.match(/(?:note|নোট|বিশেষ নির্দেশ|মন্তব্য)[:\s]+([^\n]+)/i);
     if(noteLabeled) noteParts.push(noteLabeled[1].trim());
 
-    // "X FIT TAR LAGBO" / "X ফুট/মিটার তার" → wire instruction
-    const wireFit = text.match(/(\d+)\s*(?:FIT TAR LAGBO|ফিট তার লাগবো?|fit tar lagbo)/i);
-    if(wireFit) noteParts.push(`তার: ${wireFit[1]} ফিট লাগবে`);
-
-    const wireLen = t.match(/(\d+)\s*(?:ফুট|futt?|feet?|মিটার|meter|metre)\s*(?:তার|wire|cable)/i) ||
-                    t.match(/(?:তার|wire|cable)\s*(\d+)\s*(?:ফুট|futt?|feet?|মিটার|meter)/i);
-    if(wireLen && !wireFit) noteParts.push(`তার: ${wireLen[1]} ${wireLen[0].match(/মিটার|meter/i)?'মিটার':'ফুট'}`);
-
-    // Multiple doors/rooms — "২টা দরজা", "3 room", "দুই দরজা"
-    const doorMatch = text.match(/(\d+|এক|দুই|তিন|চার|পাঁচ)\s*(?:টা|টি)?\s*(?:দরজা|door)/i);
-    if(doorMatch) noteParts.push(`দরজা: ${doorMatch[1]}টি`);
-
-    const roomMatch = text.match(/(\d+|এক|দুই|তিন|চার|পাঁচ)\s*(?:টা|টি)?\s*(?:রুম|room|কক্ষ)/i);
-    if(roomMatch) noteParts.push(`রুম: ${roomMatch[1]}টি`);
-
     // Color preference
     const colorMatch = text.match(/(?:রং|color|colour)[:\s]*([^\n,।]+)/i);
     if(colorMatch) noteParts.push(`রং: ${colorMatch[1].trim()}`);
-
-    // Installation request
-    if(/ইন্সটল|install|লাগিয়ে|সেটআপ|setup/i.test(text)) noteParts.push('ইন্সটলেশন সহ দিতে হবে');
 
     // Urgent/fast delivery
     if(/জরুরি|urgent|asap|দ্রুত|তাড়াতাড়ি/i.test(text)) noteParts.push('জরুরি ডেলিভারি');
@@ -12503,10 +12491,10 @@ function applyOrderFormDefaults(){
   const m = document.getElementById('modal-add-order');
   if(!m) return;
 
-  // ✅ FIX (Multi-product order, Sept 2026): প্রথম আইটেমে ডিফল্ট প্রোডাক্ট (Door Lock) বসাও
+  // ✅ FIX (Multi-product order, Sept 2026): প্রথম আইটেমে ডিফল্ট প্রোডাক্ট নেই (MF FASHION: প্রতিটি অর্ডারে নিজে বাছা হয়)
   if (Array.isArray(window._orderItems) && window._orderItems.length && !window._orderItems[0].product) {
     const names = window._orderProductNames || [];
-    const match = names.find(n => n.toLowerCase().includes('door lock'));
+    const match = null;
     if (match) {
       window._orderItems[0].product = match;
       onOrderProductChange(match);
@@ -13644,165 +13632,112 @@ function rgnGoToLevel(level) {
 }
 
 
-// ─── ORDER CALCULATOR ────────────────────────────────────────────────
-let calcUnit = 'ft';
-let calcFreeWireOn = true;
-const CALC_FREE_WIRE_FT = 100;
+// ─── ORDER CALCULATOR (ক্লোথিং: পণ্যের লাইন + ডিসকাউন্ট + ডেলিভারি + অগ্রিম) ───────────
+let calcLines = [{ name:'', qty:1, price:0 }];
 
-function calcToFt(v) { return calcUnit==='mt' ? v*3.28084 : v; }
 function calcFmtTk(n) { return '৳ ' + Math.round(n).toLocaleString('en'); }
+function calcEsc(s) { return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
-function calcGetBase() {
-  const t = document.getElementById('calc-order-type').value;
-  return t==='custom' ? (parseFloat(document.getElementById('calc-custom-price').value)||0) : parseInt(t);
+// ইনভেন্টরির নাম (ও দাম/স্টক) ডেটালিস্টে — ঘরে ক্লিক করলেই তালিকা আপডেট হয়
+function calcFillList() {
+  const dl = document.getElementById('calc-products'); if (!dl) return;
+  const d = Array.isArray(window.liveInventoryData) ? window.liveInventoryData : [];
+  dl.innerHTML = d.map(function(p){ return '<option value="'+calcEsc(p.name)+'">৳'+(p.sell||0)+' · স্টক '+(p.current||0)+'</option>'; }).join('');
 }
-function calcGetDoors() {
-  const t = document.getElementById('calc-door-count').value;
-  return t==='custom' ? (parseInt(document.getElementById('calc-custom-door').value)||0) : parseInt(t);
+function calcRenderLines() {
+  const box = document.getElementById('calc-lines'); if (!box) return;
+  box.innerHTML = calcLines.map(function(l,i){
+    return '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">'+
+      '<input class="form-input" type="text" list="calc-products" placeholder="পণ্যের নাম (বাছুন বা লিখুন)" value="'+calcEsc(l.name)+'" onfocus="calcFillList()" oninput="calcLineSet('+i+',\'name\',this.value)" onchange="calcLineName('+i+',this.value)" style="flex:3 1 200px;min-width:0;">'+
+      '<input class="form-input" type="number" min="1" step="1" value="'+(l.qty||1)+'" title="পরিমাণ" oninput="calcLineSet('+i+',\'qty\',this.value)" style="flex:0 0 72px;min-width:0;">'+
+      '<input class="form-input" type="number" min="0" step="1" id="calc-price-'+i+'" placeholder="দাম ৳" value="'+(l.price||'')+'" title="একক দাম" oninput="calcLineSet('+i+',\'price\',this.value)" style="flex:1 1 90px;min-width:0;">'+
+      (calcLines.length>1?'<button type="button" class="btn danger" title="বাদ দিন" onclick="calcRemoveLine('+i+')" style="padding:8px 12px;">✕</button>':'')+
+    '</div>';
+  }).join('');
 }
+function calcLineSet(i, f, v) {
+  if (!calcLines[i]) return;
+  calcLines[i][f] = (f==='name') ? v : (parseFloat(v)||0);
+  calcRun();
+}
+function calcLineName(i, v) {
+  const key = String(v||'').trim().toLowerCase();
+  const d = Array.isArray(window.liveInventoryData) ? window.liveInventoryData : [];
+  const p = d.find(function(x){ return String(x.name||'').trim().toLowerCase() === key; });
+  if (p && calcLines[i]) {
+    calcLines[i].name = p.name;
+    if (p.sell > 0) { calcLines[i].price = p.sell; const el = document.getElementById('calc-price-'+i); if (el) el.value = p.sell; }
+  }
+  calcRun();
+}
+function calcAddLine() { calcLines.push({ name:'', qty:1, price:0 }); calcRenderLines(); calcRun(); }
+function calcRemoveLine(i) {
+  calcLines.splice(i,1);
+  if (!calcLines.length) calcLines.push({ name:'', qty:1, price:0 });
+  calcRenderLines(); calcRun();
+}
+
+function calcSubtotal() { return calcLines.reduce(function(s,l){ return s + (l.qty||0)*(l.price||0); }, 0); }
 function calcGetDelivery() {
   const t = document.getElementById('calc-delivery-type').value;
   return t==='custom' ? (parseFloat(document.getElementById('calc-custom-delivery').value)||0) : parseFloat(t);
 }
-function calcGetWireAmtFt() {
-  const v = parseFloat(document.getElementById('calc-wire-amount').value)||0;
-  return calcUnit==='mt' ? v*3.28084 : v;
-}
-function calcGetWirePricePerFt() {
-  const p = parseFloat(document.getElementById('calc-wire-price').value)||0;
-  return calcUnit==='mt' ? p/3.28084 : p;
-}
-function calcHandleOrderType() {
-  const v = document.getElementById('calc-order-type').value;
-  document.getElementById('calc-custom-price-wrap').classList.toggle('calc-hidden', v!=='custom');
-  calcRun();
-}
-function calcHandleDoors() {
-  const v = document.getElementById('calc-door-count').value;
-  document.getElementById('calc-custom-door-wrap').classList.toggle('calc-hidden', v!=='custom');
-  calcRun();
+function calcGetDiscount(sub) {
+  const t = document.getElementById('calc-disc-type').value;
+  const v = parseFloat(document.getElementById('calc-disc-val').value)||0;
+  if (t==='tk')  return Math.min(Math.max(v,0), sub);
+  if (t==='pct') return Math.min(Math.round(sub * Math.min(Math.max(v,0),100) / 100), sub);
+  return 0;
 }
 function calcHandleDelivery() {
   const v = document.getElementById('calc-delivery-type').value;
   document.getElementById('calc-custom-delivery-wrap').classList.toggle('calc-hidden', v!=='custom');
   calcRun();
 }
-function calcHandleFreeWire() {
-  calcFreeWireOn = document.getElementById('calc-free-wire-toggle').checked;
-  document.getElementById('calc-free-wire-sub').textContent = calcFreeWireOn
-    ? 'চালু আছে — ১০০ ফিট বিনামূল্যে' : 'বন্ধ — সব তারের জন্য চার্জ হবে';
-  document.getElementById('calc-r-free-row').classList.toggle('calc-hidden', !calcFreeWireOn);
-  calcRun();
+function calcDeliveryLabel() {
+  const dt = document.getElementById('calc-delivery-type').value;
+  return dt==='120' ? 'ঢাকার ভেতরে' : dt==='150' ? 'ঢাকার বাইরে' : dt==='0' ? 'ফ্রি ডেলিভারি' : 'কাস্টম';
 }
-function calcSetUnit(u) {
-  calcUnit = u;
-  document.getElementById('calc-tab-ft').classList.toggle('active', u==='ft');
-  document.getElementById('calc-tab-mt').classList.toggle('active', u==='mt');
-  document.getElementById('calc-wire-unit-badge').textContent = u==='ft' ? 'ft' : 'm';
-  document.getElementById('calc-wire-amt-label').textContent = u==='ft'
-    ? 'কাস্টমারের মোট তার লাগবে (ফিট)' : 'কাস্টমারের মোট তার লাগবে (মিটার)';
-  document.getElementById('calc-wire-price-label').textContent = u==='ft'
-    ? 'তারের দাম — প্রতি ফিট (৳)' : 'তারের দাম — প্রতি মিটার (৳)';
-  calcRun();
+function calcCompute() {
+  const sub = calcSubtotal();
+  const disc = calcGetDiscount(sub);
+  const delivery = calcGetDelivery();
+  const total = Math.max(0, sub - disc + delivery);
+  const adv = Math.min(Math.max(parseFloat(document.getElementById('calc-advance').value)||0, 0), total);
+  return { sub:sub, disc:disc, delivery:delivery, total:total, adv:adv, due:total-adv };
 }
 function calcRun() {
-  const base = calcGetBase();
-  const doors = calcGetDoors();
-  const doorPrice = parseFloat(document.getElementById('calc-door-price').value)||300;
-  const extraDoors = Math.max(0, doors-1);
-  const doorCost = extraDoors * doorPrice;
-  const wireAmtFt = calcGetWireAmtFt();
-  const freeQty = calcFreeWireOn ? CALC_FREE_WIRE_FT : 0;
-  const extraWireFt = Math.max(0, wireAmtFt-freeQty);
-  const pricePerFt = calcGetWirePricePerFt();
-  const wireCost = extraWireFt * pricePerFt;
-  const delivery = calcGetDelivery();
-  const total = base + doorCost + wireCost + delivery;
-
-  document.getElementById('calc-r-base').textContent = calcFmtTk(base);
-  const dLabel = extraDoors>0 ? `অতিরিক্ত ${extraDoors}টি দরজা (×৳${Math.round(doorPrice)})` : 'অতিরিক্ত দরজা';
-  document.getElementById('calc-r-door-label').textContent = dLabel;
-  document.getElementById('calc-r-door-val').textContent = calcFmtTk(doorCost);
-  document.getElementById('calc-r-door-row').classList.toggle('calc-r-dim', extraDoors===0);
-
-  const wireAmtRaw = parseFloat(document.getElementById('calc-wire-amount').value)||0;
-  const wLabel = extraWireFt>0
-    ? `অতিরিক্ত তার (${calcUnit==='mt' ? wireAmtRaw+'m' : Math.round(wireAmtFt)+'ft'})`
-    : 'অতিরিক্ত তার';
-  document.getElementById('calc-r-wire-label').textContent = wLabel;
-  document.getElementById('calc-r-wire-val').textContent = calcFmtTk(wireCost);
-  document.getElementById('calc-r-wire-row').classList.toggle('calc-r-dim', extraWireFt<=0);
-
-  const dt = document.getElementById('calc-delivery-type').value;
-  const dlivLabel = dt==='0' ? 'ডেলিভারি (ফ্রি)' : dt==='120' ? 'ডেলিভারি (ঢাকার ভেতরে)'
-    : dt==='150' ? 'ডেলিভারি (ঢাকার বাইরে)' : 'ডেলিভারি (কাস্টম)';
-  document.getElementById('calc-r-delivery-label').textContent = dlivLabel;
-  document.getElementById('calc-r-delivery-val').textContent = delivery===0 ? 'ফ্রি' : calcFmtTk(delivery);
-  document.getElementById('calc-r-total').textContent = calcFmtTk(total);
-
-  const freeLabel = calcFreeWireOn ? '১০০ ফিট' : '০ (বন্ধ)';
-  const extraLabel = calcUnit==='mt'
-    ? (Math.max(0, wireAmtRaw - (calcFreeWireOn ? wireAmtRaw - extraWireFt/3.28084 : 0))).toFixed(1)+' মি.'
-    : Math.round(extraWireFt)+' ফিট';
-  document.getElementById('calc-wi-free').textContent = freeLabel;
-  document.getElementById('calc-wi-extra').textContent = extraWireFt>0 ? extraLabel : '০';
-  document.getElementById('calc-wi-cost').textContent = calcFmtTk(wireCost);
-  document.getElementById('calc-wire-cost-display').value = calcFmtTk(wireCost);
+  const c = calcCompute();
+  document.getElementById('calc-r-sub').textContent = calcFmtTk(c.sub);
+  document.getElementById('calc-r-disc-val').textContent = c.disc>0 ? '− ' + calcFmtTk(c.disc) : calcFmtTk(0);
+  document.getElementById('calc-r-disc-row').classList.toggle('calc-r-dim', c.disc===0);
+  document.getElementById('calc-r-delivery-label').textContent = 'ডেলিভারি (' + calcDeliveryLabel() + ')';
+  document.getElementById('calc-r-delivery-val').textContent = c.delivery===0 ? 'ফ্রি' : calcFmtTk(c.delivery);
+  document.getElementById('calc-r-total').textContent = calcFmtTk(c.total);
+  document.getElementById('calc-r-adv-val').textContent = calcFmtTk(c.adv);
+  document.getElementById('calc-r-adv-row').classList.toggle('calc-r-dim', c.adv===0);
+  document.getElementById('calc-r-due-val').textContent = calcFmtTk(c.due);
 }
 function calcGenerateMsg() {
   const name = (document.getElementById('calc-cust-name').value.trim() || 'ভাই');
-  const base = calcGetBase();
-  const doors = calcGetDoors();
-  const doorPrice = parseFloat(document.getElementById('calc-door-price').value)||300;
-  const extraDoors = Math.max(0, doors-1);
-  const doorCost = extraDoors * doorPrice;
-  const wireAmtRaw = parseFloat(document.getElementById('calc-wire-amount').value)||0;
-  const wireAmtFt = calcGetWireAmtFt();
-  const freeQty = calcFreeWireOn ? CALC_FREE_WIRE_FT : 0;
-  const extraWireFt = Math.max(0, wireAmtFt-freeQty);
-  const pricePerFt = calcGetWirePricePerFt();
-  const wireCost = Math.round(extraWireFt * pricePerFt);
-  const delivery = calcGetDelivery();
-  const total = base + doorCost + wireCost + delivery;
-  const isPreorder = document.getElementById('calc-order-type').value === '3599';
-
-  let m = `${name} ভাই, আপনার জন্য প্রাইস হিসাব করলাম 😊
-
-`;
-  m += `📦 MF FASHION
-`;
-  m += `━━━━━━━━━━━━━━━━━
-`;
-  m += `✅ বেস প্রাইস: ৳${Math.round(base).toLocaleString('en')}
-`;
-  if (extraDoors>0) m += `✅ অতিরিক্ত ${extraDoors}টি দরজা (${extraDoors}×৳${Math.round(doorPrice)}): ৳${Math.round(doorCost).toLocaleString('en')}
-`;
-  if (calcFreeWireOn) m += `✅ ফ্রি তার: ১০০ ফিট
-`;
-  if (wireCost>0) {
-    const freeStr = calcFreeWireOn ? `(১০০ ফিট ফ্রি বাদে অতিরিক্ত ${Math.round(extraWireFt)} ফিট)` : `(${wireAmtRaw} ${calcUnit==='mt'?'মিটার':'ফিট'})`;
-    m += `✅ অতিরিক্ত তার ${freeStr}: ৳${wireCost.toLocaleString('en')}
-`;
+  const c = calcCompute();
+  const items = calcLines.filter(function(l){ return (l.name||'').trim() && (l.qty||0)>0; });
+  const bar = '━━━━━━━━━━━━━━━━━\n';
+  let m = name + ' ভাই, আপনার জন্য প্রাইস হিসাব করলাম 😊\n\n';
+  m += '🛍️ MF FASHION\n' + bar;
+  if (items.length) {
+    items.forEach(function(l){
+      m += '✅ ' + l.name.trim() + ' × ' + l.qty + (l.price>0 ? ' = ৳' + Math.round(l.qty*l.price).toLocaleString('en') : '') + '\n';
+    });
+  } else {
+    m += '✅ পণ্যের মোট: ৳' + Math.round(c.sub).toLocaleString('en') + '\n';
   }
-  const dt = document.getElementById('calc-delivery-type').value;
-  if (delivery===0) { m += `✅ ডেলিভারি: ফ্রি
-`; }
-  else { const dlbl = dt==='120'?'ঢাকার ভেতরে':dt==='150'?'ঢাকার বাইরে':'কাস্টম'; m += `✅ ডেলিভারি (${dlbl}): ৳${Math.round(delivery).toLocaleString('en')}
-`; }
-  m += `━━━━━━━━━━━━━━━━━
-`;
-  m += `💰 মোট: ৳${total.toLocaleString('en')} টাকা
-
-`;
-  if (isPreorder) { m += `📌 প্রিঅর্ডার: ৳৫০০ অ্যাডভান্স দিলে এই দামে পাবেন।
-বাকি ৳${(total-500).toLocaleString('en')} ডেলিভারির সময় দিলেই হবে।
-
-`; }
-  else { m += `📌 ক্যাশ অন ডেলিভারিতে নিতে পারবেন।
-
-`; }
-  m += `অর্ডার করবেন? আপনার ঠিকানা ও ফোন নম্বর দিলেই পাঠিয়ে দেব 🙂`;
-
+  if (c.disc>0) m += '✅ ডিসকাউন্ট: −৳' + Math.round(c.disc).toLocaleString('en') + '\n';
+  m += c.delivery===0 ? '✅ ডেলিভারি: ফ্রি\n' : '✅ ডেলিভারি (' + calcDeliveryLabel() + '): ৳' + Math.round(c.delivery).toLocaleString('en') + '\n';
+  m += bar + '💰 মোট: ৳' + Math.round(c.total).toLocaleString('en') + ' টাকা\n\n';
+  if (c.adv>0) m += '💵 অগ্রিম: ৳' + Math.round(c.adv).toLocaleString('en') + '\n📌 বাকি ৳' + Math.round(c.due).toLocaleString('en') + ' ডেলিভারির সময় দিলেই হবে।\n\n';
+  else m += '📌 ক্যাশ অন ডেলিভারিতে নিতে পারবেন।\n\n';
+  m += 'অর্ডার করবেন? আপনার ঠিকানা ও ফোন নম্বর দিলেই পাঠিয়ে দেব 🙂';
   document.getElementById('calc-msg-body').textContent = m;
   document.getElementById('calc-msg-card').style.display = 'block';
   setTimeout(()=>document.getElementById('calc-msg-card').scrollIntoView({behavior:'smooth',block:'start'}),100);
@@ -13815,7 +13750,7 @@ function calcCopyMsg() {
     const bb=document.getElementById('calc-copy-big-btn');
     const bt=document.getElementById('calc-copy-big-text');
     bb.classList.add('done'); bt.textContent='✓ কপি হয়েছে — মেসেঞ্জারে পেস্ট করুন';
-    setTimeout(()=>{ b.textContent='কপি করুন'; b.classList.remove('done'); bb.classList.remove('done'); bt.textContent='এক ক্লিকে মেসেজ কপি করুন'; },3000);
+    setTimeout(()=>{ b.textContent='কপি করুন'; b.classList.remove('done'); bb.classList.remove('done'); bt.textContent='এক ক্লিকে মেসেজ কপি করুন'; },2200);
   }
   if (navigator.clipboard&&navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(onSuccess).catch(()=>calcFallbackCopy(text,onSuccess));
@@ -13829,8 +13764,9 @@ function calcFallbackCopy(text, onSuccess) {
   document.body.removeChild(ta);
 }
 // Init calculator on first load
+calcRenderLines();
 calcRun();
-// ─── END ORDER CALCULATOR ────────────────────────────────────────────
+// ─── END ORDER CALCULATOR ───────────────────────────────────────────────────
 
 // ─── CSV IMPORT ──────────────────────────────────────────────────────
 
@@ -18934,6 +18870,27 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     S.busy=true; var r=await postToAPI({ action:'fab_deleteEntry', id:id }); S.busy=false;
     if(r){ showToast('✅ এন্ট্রি মুছে ফেলা হয়েছে'); try{logAction('কাপড়ের এন্ট্রি মুছেছেন — '+id);}catch(e){} await load(true); }
   };
+
+  /* ── Excel (CSV) এক্সপোর্ট ─────────────────────────────── */
+  window.mfCsvDownload = function(name, rows){
+    function cell(c){ c=String(c==null?'':c); return /[",\r\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }
+    var csv='\ufeff'+rows.map(function(r){ return r.map(cell).join(','); }).join('\r\n');   // BOM: বাংলা Excel-এ ঠিক দেখায়
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download=name;
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },600);
+  };
+  window.fabExportItems = function(){
+    if(!S.items.length){ showToast('এক্সপোর্ট করার মতো কাপড় নেই','info'); return; }
+    var rows=[['ID','কাপড়','কালার','স্টক (গজ)','গড় দাম/গজ','স্টক মূল্য','মোট ক্রয় (গজ)','ব্যবহৃত (গজ)','অপচয় (গজ)','সতর্কতা (গজ)','সাপ্লায়ার']];
+    S.items.forEach(function(it){ rows.push([it.id,it.name,it.color,it.stock,it.avgRate,it.value,it.purchased,it.used,it.waste,it.alert,it.supplier]); });
+    window.mfCsvDownload('MF_FASHION_Fabric_Stock_'+today()+'.csv',rows);
+  };
+  window.fabExportLedger = function(){
+    var sel=$('fab-ledger-filter').value, list=S.ledger.filter(function(l){ return !sel || l.itemId===sel; });
+    if(!list.length){ showToast('এক্সপোর্ট করার মতো লেনদেন নেই','info'); return; }
+    var rows=[['তারিখ','কাপড়','কালার','ধরন','গজ','দাম/গজ','টাকা','সাপ্লায়ার','রেফারেন্স','নোট']];
+    list.forEach(function(l){ rows.push([l.date,l.itemName,l.color,(TYPE[l.type]||{l:l.type}).l,l.qty,l.rate,l.amount,l.supplier,l.ref,l.note]); });
+    window.mfCsvDownload('MF_FASHION_Fabric_Ledger_'+today()+'.csv',rows);
+  };
 })();
 </script>
 <script>
@@ -18944,7 +18901,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
 ═══════════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
-  var P = { types:[], batches:[], fabrics:[], loaded:false, busy:false };
+  var P = { types:[], batches:[], fabrics:[], variants:[], loaded:false, busy:false };
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function n2(x){ x=Number(x)||0; return (Math.round(x*100)/100).toLocaleString('en-US',{maximumFractionDigits:2}); }
@@ -18953,6 +18910,8 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
   function typeById(id){ for(var i=0;i<P.types.length;i++){ if(P.types[i].id===id) return P.types[i]; } return null; }
   function fabById(id){ for(var i=0;i<P.fabrics.length;i++){ if(P.fabrics[i].id===id) return P.fabrics[i]; } return null; }
   function fabLabel(f){ return f.name+(f.color?' — '+f.color:''); }
+  function refreshInv(){ try{ if(typeof loadLiveInventory==='function') loadLiveInventory(); }catch(e){} }
+  function variantFor(typeName,color,size){ var key=(typeName+' - '+color+' - '+size).toLowerCase(); for(var i=0;i<P.variants.length;i++){ if(String(P.variants[i].name).toLowerCase()===key) return P.variants[i]; } return null; }
   function chip(txt){ return '<span style="display:inline-block;font-size:11px;padding:2px 8px;margin:2px 4px 2px 0;border-radius:4px;background:var(--bg3);border:1px solid var(--border);">'+txt+'</span>'; }
 
   /* ── load ─────────────────────────────────────────── */
@@ -18962,7 +18921,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
       if(!silent) showToast('প্রোডাকশন ডেটা লোড হয়নি — Google Sheets সংযোগ ও GS-এর নতুন ভার্সন Deploy করা আছে কি না দেখুন','error');
       P.loaded=false; renderAll(); return false;
     }
-    P.types=d.types||[]; P.batches=d.batches||[]; P.fabrics=d.fabrics||[]; P.loaded=true; renderAll(); return true;
+    P.types=d.types||[]; P.batches=d.batches||[]; P.fabrics=d.fabrics||[]; P.variants=d.variants||[]; P.loaded=true; renderAll(); return true;
   }
   window.prodOpenPage = function(){ load(); };
 
@@ -18972,19 +18931,46 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     if(!P.types.length){ box.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:22px;">'+(P.loaded?'এখনো কোনো পণ্যের ধরন নেই — “+ নতুন পণ্যের ধরন” চেপে প্রথমে পাঞ্জাবির সাইজ চার্ট বানান':'ডেটা লোড হয়নি')+'</div>'; return; }
     box.innerHTML = P.types.map(function(t){
       var hasOv=t.sizes.some(function(s){ return s.ov && Object.keys(s.ov).length; });
-      var sizes=t.sizes.map(function(s){ return chip('<strong>'+esc(s.size)+'</strong> · '+n2(s.gaj)+' গজ'+(hasOv?' · <span style="color:var(--gold);">অন্যান্য '+tk(s.other)+'</span>':'')); }).join('');
+      var sizes=t.sizes.map(function(s){ return chip('<strong>'+esc(s.size)+'</strong> · '+n2(s.gaj)+' গজ'+(hasOv?' · <span style="color:var(--gold);">অন্যান্য '+tk(s.other)+'</span>':'')+(s.sell?' · <span style="color:var(--green);">বিক্রয় '+tk(s.sell)+'</span>':'')); }).join('');
       var costs=t.costs.length?t.costs.map(function(c){ return chip(esc(c.n)+': '+tk(c.v)); }).join('')+'<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+(hasOv?'সাধারণ (ডিফল্ট) মোট: ':'প্রতি পিসে অন্যান্য খরচ: ')+'<strong style="color:var(--gold);">'+tk(t.otherPerPc)+'</strong>'+(hasOv?' · কিছু সাইজে আলাদা টাকা আছে (উপরের সোনালি লেখা)':'')+'</div>':'<span style="font-size:11px;color:var(--text3);">কোনো অন্যান্য খরচ দেওয়া নেই</span>';
       return '<div class="inv-card" style="cursor:default;">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><strong style="font-size:15px;">'+esc(t.name)+'</strong>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span><strong style="font-size:15px;">'+esc(t.name)+'</strong>'+(t.category?'<div style="font-size:11px;color:var(--text3);">'+esc(t.category)+'</div>':'')+'</span>'+
         '<span style="white-space:nowrap;"><button class="btn" title="সম্পাদনা" onclick="prodOpenType(\''+esc(t.id)+'\')">✏️</button> <button class="btn danger" title="মুছুন" onclick="prodDeleteType(\''+esc(t.id)+'\')">🗑</button></span></div>'+
         '<div style="font-size:11px;color:var(--text3);margin-bottom:2px;">সাইজ অনুযায়ী গজ'+(hasOv?' ও অন্যান্য খরচ':'')+'</div>'+sizes+
         '<div style="font-size:11px;color:var(--text3);margin:8px 0 2px;">অন্যান্য খরচ (সাধারণ)</div>'+costs+'</div>';
     }).join('');
   }
 
+  function renderStock(){
+    var box=$('pmod-stock'); if(!box) return;
+    if(!P.variants.length){ box.innerHTML='<div style="text-align:center;color:var(--text3);padding:16px;">'+(P.loaded?'এখনো কোনো তৈরি পণ্য বিক্রির স্টকে নেই — প্রোডাকশন সেভের সময় “বিক্রির স্টকে যোগ করুন” টিক থাকলে এখানে কালার × সাইজ গ্রিড আসবে':'ডেটা লোড হয়নি')+'</div>'; return; }
+    var groups={}, order=[];
+    P.variants.forEach(function(v){
+      if(!groups[v.typeName]){ groups[v.typeName]={colors:[],sizes:[],map:{},typeId:v.typeId}; order.push(v.typeName); }
+      var g=groups[v.typeName]; if(g.colors.indexOf(v.color)<0) g.colors.push(v.color); if(g.sizes.indexOf(v.size)<0) g.sizes.push(v.size);
+      g.map[v.color+'\u0000'+v.size]=v;
+    });
+    box.innerHTML = order.map(function(name){
+      var g=groups[name], ty=typeById(g.typeId);
+      if(ty){ var sorted=ty.sizes.map(function(s){return s.size;}).filter(function(s){return g.sizes.indexOf(s)>=0;}); g.sizes.forEach(function(s){ if(sorted.indexOf(s)<0) sorted.push(s); }); g.sizes=sorted; }
+      var total=0, val=0; P.variants.forEach(function(v){ if(v.typeName===name){ total+=v.stock; val+=v.stock*v.cost; } });
+      var h='<div style="margin-bottom:18px;"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px;"><strong style="font-size:14px;">'+esc(name)+'</strong><span style="font-size:12px;color:var(--text2);">মোট '+total+' পিস · স্টক মূল্য (খরচে) '+tk(val)+'</span></div>';
+      h+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="text-align:left;padding:6px;">কালার \\ সাইজ</th>'+g.sizes.map(function(s){ return '<th style="padding:6px;text-align:center;">'+esc(s)+'</th>'; }).join('')+'<th style="padding:6px;text-align:center;">মোট</th></tr></thead><tbody>';
+      g.colors.forEach(function(c){
+        var rt=0;
+        h+='<tr><td style="padding:6px;"><strong>'+esc(c)+'</strong></td>'+g.sizes.map(function(s){
+          var v=g.map[c+'\u0000'+s]; if(!v) return '<td style="text-align:center;color:var(--text3);">—</td>';
+          rt+=v.stock; var col=v.stock<=0?'var(--red)':(v.stock<=v.alert?'var(--orange)':'var(--green)');
+          return '<td style="text-align:center;font-weight:700;color:'+col+';" title="'+esc(v.name)+' — বিক্রয় '+tk(v.sell)+' / খরচ '+tk(v.cost)+'">'+v.stock+'</td>';
+        }).join('')+'<td style="text-align:center;font-weight:700;">'+rt+'</td></tr>';
+      });
+      return h+'</tbody></table></div></div>';
+    }).join('');
+  }
+
   function renderBatches(){
     var tb=$('pmod-batches');
-    if(!P.batches.length){ tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px;">'+(P.loaded?'এখনো কোনো প্রোডাকশন নেই':'ডেটা লোড হয়নি')+'</td></tr>'; return; }
+    if(!P.batches.length){ tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px;">'+(P.loaded?'এখনো কোনো প্রোডাকশন নেই':'ডেটা লোড হয়নি')+'</td></tr>'; return; }
     tb.innerHTML = P.batches.map(function(b){
       var pcs=b.lines.map(function(l){ return esc(l.size)+'×'+l.qty; }).join(', ');
       var wp=b.planned>0?(b.waste/b.planned*100):0;
@@ -18998,10 +18984,11 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
         '<td style="color:'+(b.waste>0?'var(--red)':'var(--text3)')+';">'+(b.waste>0?n2(b.waste)+' গজ ('+n2(wp)+'%)':'—')+'</td>'+
         '<td style="font-weight:700;">'+tk(b.totalCost)+'</td>'+
         '<td style="font-weight:700;color:var(--gold);">'+tk(b.costPerPc)+'</td>'+
+        '<td>'+(b.stocked?'<span style="color:var(--green);font-size:11px;font-weight:700;">✔ স্টকে আছে</span>':'<button class="btn" style="font-size:11px;padding:3px 8px;" onclick="prodOpenStockIn(\''+esc(b.id)+'\')">📦 স্টকে যোগ</button>')+'</td>'+
         '<td><button class="btn danger" title="ব্যাচ মুছুন (কাপড়ের স্টক ফেরত আসবে)" onclick="prodDeleteBatch(\''+esc(b.id)+'\')">🗑</button></td></tr>';
     }).join('');
   }
-  function renderAll(){ renderTypes(); renderBatches(); }
+  function renderAll(){ renderTypes(); renderStock(); renderBatches(); }
 
   /* ── type modal ───────────────────────────────────── */
   var OV = {};   // সাইজ অনুযায়ী আলাদা খরচ: { sizeLower: { costName: 'value' } }
@@ -19039,10 +19026,11 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     });
     box.appendChild(tbl);
   }
-  function sizeRow(size,gaj){
+  function sizeRow(size,gaj,sell){
     var d=document.createElement('div'); d.className='prt-size-row'; d.style.cssText='display:flex;gap:6px;margin-bottom:6px;';
-    d.innerHTML='<input class="form-input prt-s" type="text" maxlength="12" placeholder="সাইজ (M / 38)" style="flex:1;" value="'+esc(size||'')+'">'+
+    d.innerHTML='<input class="form-input prt-s" type="text" maxlength="12" placeholder="সাইজ (M / 38)" style="flex:1.1;" value="'+esc(size||'')+'">'+
                 '<input class="form-input prt-g" type="number" min="0" step="0.01" placeholder="গজ" style="flex:1;" value="'+(gaj!=null&&gaj!==''?esc(gaj):'')+'">'+
+                '<input class="form-input prt-p" type="number" min="0" step="1" placeholder="বিক্রয় ৳" style="flex:1.1;" value="'+(sell?esc(sell):'')+'">'+
                 '<button class="btn danger" type="button" title="বাদ দিন">✕</button>';
     d.lastChild.onclick=function(){ d.remove(); ovRebuild(); };
     $('prt-sizes').appendChild(d);
@@ -19067,10 +19055,10 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
   };
   window.prodOpenType = function(id){
     var t=id?typeById(id):null;
-    $('prt-id').value=t?t.id:''; $('prt-name').value=t?t.name:''; $('prt-notes').value=t?(t.notes||''):'';
+    $('prt-id').value=t?t.id:''; $('prt-name').value=t?t.name:''; $('prt-cat').value=t?(t.category||''):''; $('prt-notes').value=t?(t.notes||''):'';
     $('prt-sizes').innerHTML=''; $('prt-costs').innerHTML=''; $('prt-ov').innerHTML=''; OV={};
     if(t){
-      t.sizes.forEach(function(s){ sizeRow(s.size,s.gaj); var k=s.size.toLowerCase(); OV[k]={}; Object.keys(s.ov||{}).forEach(function(n){ OV[k][n]=String(s.ov[n]); }); });
+      t.sizes.forEach(function(s){ sizeRow(s.size,s.gaj,s.sell); var k=s.size.toLowerCase(); OV[k]={}; Object.keys(s.ov||{}).forEach(function(n){ OV[k][n]=String(s.ov[n]); }); });
       t.costs.forEach(function(c){ costRow(c.n,c.v); });
       if(!t.costs.length) costRow('','');
     } else { sizeRow('',''); ['সেলাই','বোতাম / লাইনিং','প্যাকেজিং','অন্যান্য'].forEach(function(n){ costRow(n,''); }); }
@@ -19088,7 +19076,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
       if(!s && isNaN(g)) return;
       if(!s){ bad='সাইজের নাম দিন'; return; }
       if(!(g>0)){ bad='সাইজ "'+s+'"-এর গজ দিন'; return; }
-      sizes.push({size:s,gaj:g,ov:{}});
+      sizes.push({size:s,gaj:g,ov:{},sell:parseFloat(r.querySelector('.prt-p').value)||0});
     });
     Array.prototype.forEach.call(document.querySelectorAll('#prt-costs .prt-cost-row'),function(r){
       rawCosts.push({n:r.querySelector('.prt-cn').value.trim(), v:r.querySelector('.prt-cv').value});
@@ -19112,7 +19100,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     });
     if(bad){ showToast(bad,'error'); return; }
     P.busy=true; var btn=$('prt-save'); btn.disabled=true;
-    var r=await postToAPI({ action:'prod_saveType', id:$('prt-id').value, name:name, sizes:sizes, costs:costs, notes:$('prt-notes').value.trim() });
+    var r=await postToAPI({ action:'prod_saveType', id:$('prt-id').value, name:name, category:$('prt-cat').value.trim(), sizes:sizes, costs:costs, notes:$('prt-notes').value.trim() });
     P.busy=false; btn.disabled=false;
     if(r){ closeModal('prod-type'); showToast('✅ সাইজ চার্ট সেভ হয়েছে'); try{logAction('প্রোডাকশন: পণ্যের ধরন সেভ — '+name);}catch(e){} await load(true); }
   };
@@ -19130,16 +19118,31 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     $('pb-fabric').innerHTML=P.fabrics.map(function(f){ return '<option value="'+esc(f.id)+'">'+esc(fabLabel(f))+' ('+n2(f.stock)+' গজ)</option>'; }).join('');
     $('pb-type').innerHTML=P.types.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
     $('pb-date').value=today(); $('pb-date').max=today(); $('pb-note').value=''; $('pb-actual').value='';
+    $('pb-stockin').checked=true;
+    var f0=fabById($('pb-fabric').value); $('pb-color').value=f0?(f0.color||''):'';
     window.prodBatchType(); openModal('prod-batch');
+  };
+  window.prodBatchFabric = function(){ var f=fabById($('pb-fabric').value); $('pb-color').value=f?(f.color||''):''; window.prodBatchHints(); window.prodBatchCalc(); };
+  // নতুন ভ্যারিয়েন্ট হলে বিক্রয় মূল্য বসানো যাবে; আগে থেকে থাকলে বিদ্যমান দাম দেখাবে (বদলাতে Inventory পেজ)
+  window.prodBatchHints = function(){
+    var t=typeById($('pb-type').value), color=$('pb-color').value.trim(), on=$('pb-stockin').checked;
+    Array.prototype.forEach.call(document.querySelectorAll('#pb-sizes .pb-p'),function(i){
+      var size=i.getAttribute('data-size'), v=(t&&color)?variantFor(t.name,color,size):null;
+      i.style.display=on?'':'none';
+      if(v){ i.value=v.sell||''; i.disabled=true; i.title='এই ভ্যারিয়েন্ট আগে থেকেই আছে — বিক্রয় মূল্য Inventory পেজ থেকে বদলান'; i.placeholder='আছে'; }
+      else { if(i.disabled) i.value=i.getAttribute('data-def')||''; i.disabled=false; i.title=''; i.placeholder='বিক্রয় ৳'; }
+    });
+    var cg=$('pb-color-g'); if(cg) cg.style.display=on?'':'none';
   };
   window.prodBatchType = function(){
     var t=typeById($('pb-type').value), box=$('pb-sizes'); $('pb-actual').value='';
     box.innerHTML = t ? t.sizes.map(function(s){
       return '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;">'+
         '<div style="font-size:12px;margin-bottom:4px;"><strong>'+esc(s.size)+'</strong> <span style="color:var(--text3);">· '+n2(s.gaj)+' গজ</span></div>'+
-        '<input class="form-input pb-q" type="number" min="0" step="1" placeholder="পিস" data-size="'+esc(s.size)+'" data-gaj="'+s.gaj+'" data-other="'+(s.other||0)+'" style="width:100%;" oninput="prodBatchCalc()"></div>';
+        '<input class="form-input pb-q" type="number" min="0" step="1" placeholder="পিস" data-size="'+esc(s.size)+'" data-gaj="'+s.gaj+'" data-other="'+(s.other||0)+'" style="width:100%;" oninput="prodBatchCalc()">'+
+        '<input class="form-input pb-p" type="number" min="0" step="1" placeholder="বিক্রয় ৳" data-size="'+esc(s.size)+'" data-def="'+(s.sell||'')+'" value="'+(s.sell||'')+'" style="width:100%;margin-top:4px;font-size:12px;"></div>';
     }).join('') : '';
-    window.prodBatchCalc();
+    window.prodBatchHints(); window.prodBatchCalc();
   };
   function readLines(){
     var out=[]; Array.prototype.forEach.call(document.querySelectorAll('#pb-sizes .pb-q'),function(i){
@@ -19174,18 +19177,247 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     var av=$('pb-actual').value.trim(), actual=av===''?planned:(parseFloat(av)||0);
     if(!(actual>0)){ showToast('ব্যবহৃত গজ সঠিক দিন','error'); return; }
     if(actual>f.stock+0.0001){ showToast('স্টকে মাত্র '+n2(f.stock)+' গজ আছে','error'); return; }
+    var on=$('pb-stockin').checked, color=$('pb-color').value.trim(), sells={}, noPrice=0;
+    if(on && !color){ showToast('বিক্রির জন্য কালারের নাম দিন (অথবা “স্টকে যোগ করুন” টিক তুলে দিন)','error'); return; }
+    if(on){ lines.forEach(function(l){ var inp=document.querySelector('#pb-sizes .pb-p[data-size="'+l.size.replace(/"/g,'\\"')+'"]'); if(inp && !inp.disabled){ var pv=parseFloat(inp.value); if(pv>0) sells[l.size]=pv; else noPrice++; } }); }
     P.busy=true; var btn=$('pb-save'); btn.disabled=true;
     var r=await postToAPI({ action:'prod_addBatch', fabricId:f.id, typeId:t.id, date:$('pb-date').value,
-      lines:lines.map(function(l){ return {size:l.size,qty:l.qty}; }), actualGaj:av===''?'':actual, note:$('pb-note').value.trim() });
+      lines:lines.map(function(l){ return {size:l.size,qty:l.qty}; }), actualGaj:av===''?'':actual, note:$('pb-note').value.trim(),
+      stockIn:on, variantLabel:color, sells:sells });
     P.busy=false; btn.disabled=false;
-    if(r){ closeModal('prod-batch'); showToast('✅ প্রোডাকশন সেভ হয়েছে — কাপড় বাদ গেছে'); try{logAction('প্রোডাকশন: '+t.name+' — '+fabLabel(f)+' — '+n2(actual)+' গজ');}catch(e){} await load(true); }
+    if(r && r.stockError){ showToast('প্রোডাকশন সেভ হয়েছে, কিন্তু বিক্রির স্টকে যোগ হয়নি — ব্যাচ তালিকা থেকে “স্টকে যোগ” চেপে আবার চেষ্টা করুন','error'); }
+    if(r){ closeModal('prod-batch'); showToast(on&&!(r&&r.stockError)?'✅ প্রোডাকশন সেভ — কাপড় বাদ ও তৈরি পিস বিক্রির স্টকে যোগ হয়েছে':'✅ প্রোডাকশন সেভ হয়েছে — কাপড় বাদ গেছে'); if(on && noPrice>0 && !(r&&r.stockError)) setTimeout(function(){ showToast('ℹ️ '+noPrice+'টি নতুন ভ্যারিয়েন্টের বিক্রয় মূল্য দেওয়া হয়নি — Inventory পেজ থেকে সেট করুন','info'); },900); try{logAction('প্রোডাকশন: '+t.name+' — '+fabLabel(f)+' — '+n2(actual)+' গজ');}catch(e){} await load(true); refreshInv(); }
   };
   window.prodDeleteBatch = async function(id){
     if(P.busy) return;
-    if(!confirm('এই প্রোডাকশন ব্যাচ মুছে ফেলবেন? কাপড়ের গজ স্টকে ফেরত আসবে।')) return;
+    var bd=null; P.batches.forEach(function(x){ if(x.id===id) bd=x; });
+    if(!confirm('এই প্রোডাকশন ব্যাচ মুছে ফেলবেন? কাপড়ের গজ স্টকে ফেরত আসবে।'+(bd&&bd.stocked?'\n\nএই ব্যাচের পিস বিক্রির স্টকে তোলা হয়েছিল — সেগুলোও স্টক থেকে কমানো হবে (বিক্রি হয়ে গেলে মোছা যাবে না)।':''))) return;
     P.busy=true; var r=await postToAPI({ action:'prod_deleteBatch', id:id }); P.busy=false;
-    if(r){ showToast('✅ ব্যাচ মুছে ফেলা হয়েছে — কাপড়ের স্টক ফেরত এসেছে'); try{logAction('প্রোডাকশন ব্যাচ মুছেছেন — '+id);}catch(e){} await load(true); }
+    if(r){ showToast('✅ ব্যাচ মুছে ফেলা হয়েছে — কাপড়ের স্টক ফেরত এসেছে'); try{logAction('প্রোডাকশন ব্যাচ মুছেছেন — '+id);}catch(e){} await load(true); refreshInv(); }
   };
+
+  /* ── আগের ব্যাচের তৈরি পিস পরে বিক্রির স্টকে যোগ ─────────────── */
+  window.prodStockInHints = function(){
+    var b=null; P.batches.forEach(function(x){ if(x.id===$('psi-id').value) b=x; });
+    var t=b?typeById(b.typeId):null, color=$('psi-color').value.trim();
+    Array.prototype.forEach.call(document.querySelectorAll('#psi-sizes .psi-p'),function(i){
+      var v=(t&&color)?variantFor(t.name,color,i.getAttribute('data-size')):null;
+      if(v){ i.value=v.sell||''; i.disabled=true; i.placeholder='আছে'; i.title='এই ভ্যারিয়েন্ট আগে থেকেই আছে — দাম Inventory পেজ থেকে বদলান'; }
+      else { if(i.disabled) i.value=i.getAttribute('data-def')||''; i.disabled=false; i.placeholder='বিক্রয় ৳'; i.title=''; }
+    });
+  };
+  window.prodOpenStockIn = function(id){
+    var b=null; P.batches.forEach(function(x){ if(x.id===id) b=x; });
+    if(!b) return; var t=typeById(b.typeId);
+    if(!t){ showToast('এই ব্যাচের পণ্যের ধরন আর নেই','error'); return; }
+    var f=fabById(b.fabricId);
+    $('psi-id').value=id;
+    $('psi-info').innerHTML='<div style="line-height:1.7;"><strong>'+esc(b.id)+'</strong> · '+esc(b.typeName)+' · '+esc(b.fabricName)+'<br>'+b.lines.map(function(l){ return esc(l.size)+'×'+l.qty; }).join(', ')+' ('+b.totalPcs+' পিস) · গড় খরচ '+tk(b.costPerPc)+'/পিস</div>';
+    $('psi-color').value=f?(f.color||''):'';
+    $('psi-sizes').innerHTML=b.lines.filter(function(l){ return !l.variant; }).map(function(l){
+      var ts=null; t.sizes.forEach(function(s){ if(s.size===l.size) ts=s; });
+      var d=ts&&ts.sell?ts.sell:'';
+      return '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;"><div style="font-size:12px;margin-bottom:4px;"><strong>'+esc(l.size)+'</strong> <span style="color:var(--text3);">· '+l.qty+' পিস</span></div>'+
+             '<input class="form-input psi-p" type="number" min="0" step="1" placeholder="বিক্রয় ৳" data-size="'+esc(l.size)+'" data-def="'+d+'" value="'+d+'" style="width:100%;"></div>';
+    }).join('');
+    window.prodStockInHints(); openModal('prod-stockin');
+  };
+  window.prodSaveStockIn = async function(){
+    if(P.busy) return;
+    var id=$('psi-id').value, color=$('psi-color').value.trim();
+    if(!color){ showToast('বিক্রির জন্য কালারের নাম দিন','error'); return; }
+    var sells={}; Array.prototype.forEach.call(document.querySelectorAll('#psi-sizes .psi-p'),function(i){ if(!i.disabled){ var v=parseFloat(i.value); if(v>0) sells[i.getAttribute('data-size')]=v; } });
+    P.busy=true; var btn=$('psi-save'); btn.disabled=true;
+    var r=await postToAPI({ action:'prod_stockInBatch', id:id, variantLabel:color, sells:sells });
+    P.busy=false; btn.disabled=false;
+    if(r){ closeModal('prod-stockin'); showToast('✅ তৈরি পিস বিক্রির স্টকে যোগ হয়েছে'); try{logAction('প্রোডাকশন ব্যাচ স্টকে যোগ — '+id+' — '+color);}catch(e){} await load(true); refreshInv(); }
+  };
+
+  /* ── Excel (CSV) এক্সপোর্ট ─────────────────────────────── */
+  window.prodExportBatches = function(){
+    if(!P.batches.length){ showToast('এক্সপোর্ট করার মতো ব্যাচ নেই','info'); return; }
+    var rows=[['ব্যাচ','তারিখ','পণ্য','কাপড়','সাইজ অনুযায়ী পিস','মোট পিস','পরিকল্পিত গজ','ব্যবহৃত গজ','অপচয় গজ','কাপড়ের খরচ','অন্যান্য খরচ','মোট খরচ','গড় খরচ/পিস','বিক্রির স্টকে','নোট']];
+    P.batches.forEach(function(b){ rows.push([b.id,b.date,b.typeName,b.fabricName,b.lines.map(function(l){ return l.size+'×'+l.qty; }).join(' '),b.totalPcs,b.planned,b.actual,b.waste,b.fabricCost,b.otherCost,b.totalCost,b.costPerPc,b.stocked?'হ্যাঁ':'না',b.note]); });
+    window.mfCsvDownload('MF_FASHION_Production_'+today()+'.csv',rows);
+  };
+  window.prodExportStock = function(){
+    if(!P.variants.length){ showToast('এক্সপোর্ট করার মতো তৈরি পণ্যের স্টক নেই','info'); return; }
+    var rows=[['পণ্য','কালার','সাইজ','স্টক (পিস)','সতর্কতা','বিক্রয় মূল্য','খরচ/পিস','স্টক মূল্য (খরচে)','Inventory নাম']];
+    P.variants.forEach(function(v){ rows.push([v.typeName,v.color,v.size,v.stock,v.alert,v.sell,v.cost,Math.round(v.stock*v.cost*100)/100,v.name]); });
+    window.mfCsvDownload('MF_FASHION_Finished_Stock_'+today()+'.csv',rows);
+  };
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   👕 অর্ডার ফর্মের দ্রুত সিলেক্ট (পণ্য → কালার → সাইজ), সেট সহ
+   বিদ্যমান অর্ডার লজিক অপরিবর্তিত — শুধু অ্যাপের নিজস্ব _updateOrderItem()
+   দিয়ে ইনভেন্টরির ভ্যারিয়েন্ট নাম (যেমন "Panjabi - Navy Blue - M") অর্ডারে বসায়।
+   সেট = দুটি আলাদা ভ্যারিয়েন্ট (যেমন পাঞ্জাবি + পায়জামা) একসাথে দুটি লাইনে।
+═══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var V = { variants:[], types:[], loadedAt:0, busy:false };
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function n2(x){ x=Number(x)||0; return (Math.round(x*100)/100).toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function uniq(a){ var o=[]; a.forEach(function(x){ if(o.indexOf(x)<0) o.push(x); }); return o; }
+  function sfxOf(s){ return (typeof s==='string')?s:''; }
+  function sizeRank(typeName,size){ for(var i=0;i<V.types.length;i++){ if(V.types[i].name===typeName){ for(var j=0;j<V.types[i].sizes.length;j++){ if(V.types[i].sizes[j].size===size) return j; } } } return 999; }
+  function current(sfx){
+    var ty=$('vq-type'+sfx).value, co=$('vq-color'+sfx).value, sz=$('vq-size'+sfx).value;
+    for(var i=0;i<V.variants.length;i++){ var v=V.variants[i]; if(v.typeName===ty && v.color===co && v.size===sz) return v; }
+    return null;
+  }
+  function setOn(){ var c=$('vq-set'); return !!(c && c.checked); }
+
+  async function load(force){
+    if(V.busy) return;
+    if(!force && Date.now()-V.loadedAt<20000){ render(); return; }
+    V.busy=true; var d=await fetchFromAPI('var_data',{ _:Date.now() }); V.busy=false;
+    if(!d || !d.variants) return;
+    V.variants=d.variants; V.types=d.types||[]; V.loadedAt=Date.now();
+    // অ্যাপের প্রোডাক্ট তালিকায় নাম না থাকলে ইনভেন্টরি রিফ্রেশ (নইলে ড্রপডাউনে নাম দেখা যেত না)
+    try{
+      var have={}; (liveInventoryData||[]).forEach(function(p){ have[String(p.name||'').trim().toLowerCase()]=1; });
+      var miss=V.variants.some(function(v){ return !have[String(v.name).trim().toLowerCase()]; });
+      if(miss && typeof loadLiveInventory==='function') await loadLiveInventory();
+      if(typeof populateOrderProductDropdown==='function') populateOrderProductDropdown();
+    }catch(e){}
+    render();
+  }
+  function fillTypes(sfx, preferNot){
+    var names=uniq(V.variants.map(function(v){ return v.typeName; })), sel=$('vq-type'+sfx), prev=sel.value;
+    sel.innerHTML=names.map(function(n){ return '<option value="'+esc(n)+'">'+esc(n)+'</option>'; }).join('');
+    if(names.indexOf(prev)>=0) sel.value=prev;
+    else if(preferNot){ for(var i=0;i<names.length;i++){ if(names[i]!==preferNot){ sel.value=names[i]; break; } } }
+    window.vqType(sfx);
+  }
+  function render(){
+    var box=$('vq-box'); if(!box) return;
+    if(!V.variants.length){ box.style.display='none'; return; }
+    box.style.display='';
+    fillTypes('');
+    if(setOn()) fillTypes('2',$('vq-type').value);
+  }
+  window.vqType = function(sfx){
+    sfx=sfxOf(sfx);
+    var ty=$('vq-type'+sfx).value, prev=$('vq-color'+sfx).value;
+    var colors=uniq(V.variants.filter(function(v){ return v.typeName===ty; }).map(function(v){ return v.color; }));
+    $('vq-color'+sfx).innerHTML=colors.map(function(c){
+      var tot=0; V.variants.forEach(function(v){ if(v.typeName===ty && v.color===c) tot+=v.stock; });
+      return '<option value="'+esc(c)+'">'+esc(c)+' ('+tot+')</option>'; }).join('');
+    if(colors.indexOf(prev)>=0) $('vq-color'+sfx).value=prev;
+    window.vqColor(sfx);
+  };
+  window.vqColor = function(sfx){
+    sfx=sfxOf(sfx);
+    var ty=$('vq-type'+sfx).value, co=$('vq-color'+sfx).value, prev=$('vq-size'+sfx).value;
+    var list=V.variants.filter(function(v){ return v.typeName===ty && v.color===co; }).sort(function(a,b){ return sizeRank(ty,a.size)-sizeRank(ty,b.size); });
+    $('vq-size'+sfx).innerHTML=list.map(function(v){ return '<option value="'+esc(v.size)+'">'+esc(v.size)+' ('+v.stock+')</option>'; }).join('');
+    if(list.some(function(v){ return v.size===prev; })) $('vq-size'+sfx).value=prev;
+    window.vqHint();
+  };
+  window.vqSetToggle = function(){
+    var on=setOn(); $('vq-row2').style.display=on?'flex':'none';
+    if(on) fillTypes('2',$('vq-type').value);
+    window.vqHint();
+  };
+  function hintFor(v,q){
+    var low=v.stock<q;
+    return esc(v.name)+': স্টক <strong style="color:'+(v.stock<=0?'var(--red)':(low?'var(--orange)':'var(--green)'))+';">'+v.stock+'</strong> · ৳'+n2(v.sell)+(low?' <span style="color:var(--red);">⚠ স্টকের চেয়ে বেশি</span>':'')+(v.sell>0?'':' <span style="color:var(--orange);">(দাম সেট নেই)</span>');
+  }
+  window.vqHint = function(){
+    var h=$('vq-hint'), q=Math.max(1,parseInt($('vq-qty').value,10)||1), v1=current(''), parts=[];
+    if(!v1){ h.textContent=''; return; }
+    parts.push(hintFor(v1,q));
+    if(setOn()){ var v2=current('2'); if(v2){ parts.push(hintFor(v2,q)); h.innerHTML=parts.join('<br>')+'<br><strong>সেটের মোট: ৳'+n2((v1.sell+v2.sell)*q)+'</strong>'; return; } }
+    h.innerHTML=parts.join('<br>');
+  };
+  function addOne(v,q){
+    var items=window._orderItems; if(!Array.isArray(items)) return false;
+    var idx=-1; for(var i=0;i<items.length;i++){ if(!items[i].product){ idx=i; break; } }
+    if(idx<0){ items.push({product:'',qty:1,price:0}); idx=items.length-1; }
+    items[idx].qty=q; items[idx].price=v.sell||0;
+    _updateOrderItem(idx,'product',v.name);                     // অ্যাপের নিজস্ব ফাংশন: প্রফিট-স্প্লিট লোড + রি-রেন্ডার
+    var names=window._orderProductNames||[];                    // তালিকায় নাম না থাকলে যোগ করে আবার রেন্ডার
+    if(names.indexOf(v.name)<0){ names.push(v.name); names.sort(function(a,b){ return a.localeCompare(b); }); window._orderProductNames=names; _renderOrderItems(); }
+    return true;
+  }
+  window.vqAdd = function(){
+    var v1=current(''); if(!v1){ showToast('পণ্য, কালার ও সাইজ বেছে নিন','error'); return; }
+    var q=Math.max(1,parseInt($('vq-qty').value,10)||1), list=[v1];
+    if(setOn()){ var v2=current('2'); if(!v2){ showToast('সেটের দ্বিতীয় পণ্য, কালার ও সাইজ বেছে নিন','error'); return; } if(v2.name===v1.name){ showToast('সেটে একই পণ্য দুইবার বাছা যাবে না','error'); return; } list.push(v2); }
+    var short=list.filter(function(v){ return v.stock<q; });
+    if(short.length && !confirm(short.map(function(v){ return v.name+' — স্টকে '+v.stock+'টি'; }).join('\n')+'\n\nআপনি '+q+'টি করে যোগ করছেন। তবুও যোগ করবেন?')) return;
+    list.forEach(function(v){ addOne(v,q); });
+    $('vq-qty').value=1; window.vqHint();
+    showToast('✅ '+(list.length>1?'সেট (':'')+list.map(function(v){ return v.name; }).join(' + ')+(list.length>1?')':'')+' × '+q+' অর্ডারে যোগ হয়েছে');
+  };
+  // অর্ডার মডাল খুললেই ভ্যারিয়েন্ট লোড (মডালের কোড অপরিবর্তিত — শুধু class বদল দেখা হয়)
+  var modal=$('modal-add-order');
+  if(modal && window.MutationObserver){
+    var was=false;
+    new MutationObserver(function(){ var open=modal.classList.contains('open'); if(open && !was) load(false); was=open; }).observe(modal,{attributes:true,attributeFilter:['class']});
+  }
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   📂 INVENTORY ভ্যারিয়েন্ট-গ্রুপ ভিউ (শুধু দেখানো — মূল Inventory টেবিল অপরিবর্তিত)
+   নাম "পণ্য - কালার - সাইজ" ধাঁচের সারিগুলোকে পণ্য অনুযায়ী কালার × সাইজ গ্রিডে দেখায়।
+   renderInventoryData() শেষ হওয়ার পর শুধু একটি অতিরিক্ত ভিউ আঁকে।
+═══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function tk(x){ return '৳'+(Math.round(Number(x)||0)).toLocaleString('en-US'); }
+  function parse(name){
+    var p=String(name||'').split(' - ');
+    if(p.length<3) return null;
+    var v={type:p[0].trim(), size:p[p.length-1].trim(), color:p.slice(1,-1).join(' - ').trim()};
+    return (v.type&&v.size&&v.color)?v:null;
+  }
+  function render(rows){
+    var box=document.getElementById('inv-variant-groups'); if(!box) return;
+    var openSet={}; Array.prototype.forEach.call(box.querySelectorAll('details[open]'),function(d){ openSet[d.getAttribute('data-g')]=1; });
+    var groups={}, order=[];
+    (rows||[]).forEach(function(r){
+      var v=parse(r.name); if(!v) return;
+      if(!groups[v.type]){ groups[v.type]={colors:[],sizes:[],map:{}}; order.push(v.type); }
+      var g=groups[v.type]; if(g.colors.indexOf(v.color)<0) g.colors.push(v.color); if(g.sizes.indexOf(v.size)<0) g.sizes.push(v.size);
+      g.map[v.color+'\u0000'+v.size]=r;
+    });
+    if(!order.length){ box.style.display='none'; box.innerHTML=''; return; }
+    box.style.display='';
+    var body=order.map(function(type){
+      var g=groups[type], total=0, val=0, low=0;
+      Object.keys(g.map).forEach(function(k){ var r=g.map[k]; total+=r.current; val+=r.current*r.cost; if(r.current<=r.alert) low++; });
+      var h='<details data-g="'+esc(type)+'"'+(openSet[type]?' open':'')+' style="border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:var(--bg3);">'+
+        '<summary style="cursor:pointer;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;list-style:none;"><strong>'+esc(type)+'</strong>'+
+        '<span style="font-size:12px;color:var(--text2);">'+g.colors.length+' কালার · মোট '+total+' পিস · স্টক মূল্য (খরচে) '+tk(val)+(low?' · <span style="color:var(--orange);">⚠ '+low+'টি কম</span>':'')+'</span></summary>'+
+        '<div style="overflow-x:auto;padding:0 14px 12px;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="text-align:left;padding:6px;">কালার \\ সাইজ</th>'+
+        g.sizes.map(function(s){ return '<th style="padding:6px;text-align:center;">'+esc(s)+'</th>'; }).join('')+'<th style="padding:6px;text-align:center;">মোট</th></tr></thead><tbody>';
+      g.colors.forEach(function(c){
+        var rt=0;
+        h+='<tr><td style="padding:6px;"><strong>'+esc(c)+'</strong></td>'+g.sizes.map(function(s){
+          var r=g.map[c+'\u0000'+s]; if(!r) return '<td style="text-align:center;color:var(--text3);">—</td>';
+          rt+=r.current; var col=r.current<=0?'var(--red)':(r.current<=r.alert?'var(--orange)':'var(--green)');
+          return '<td style="text-align:center;font-weight:700;color:'+col+';" title="'+esc(r.name)+' — বিক্রয় '+tk(r.sell)+' / খরচ '+tk(r.cost)+'">'+r.current+'</td>';
+        }).join('')+'<td style="text-align:center;font-weight:700;">'+rt+'</td></tr>';
+      });
+      return h+'</tbody></table></div></details>';
+    }).join('');
+    box.innerHTML='<div class="table-wrapper"><div class="table-header"><span class="table-title">📂 ভ্যারিয়েন্ট গ্রুপ (কালার × সাইজ)</span><span style="font-size:11px;color:var(--text3);">নিচের Product Database-এ সব সারি আগের মতোই আছে</span></div><div style="padding:12px;">'+body+'</div></div>';
+  }
+  if(typeof window.renderInventoryData==='function'){
+    var orig=window.renderInventoryData;
+    window.renderInventoryData=function(rows){
+      var out=orig.apply(this,arguments);
+      try{ render(rows); }catch(e){}
+      return out;
+    };
+  }
 })();
 </script>
 </body>
