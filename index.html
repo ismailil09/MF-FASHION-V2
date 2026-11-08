@@ -1691,6 +1691,25 @@ tbody td.muted{color:var(--text3);}
 .igp-r{cursor:pointer}.igp-r:hover{background:rgba(128,128,128,.07)}.igp-r.open{background:rgba(128,128,128,.1)}.igp-d>td{background:rgba(128,128,128,.05);padding:6px 10px 12px}.igp-t.sub td,.igp-t.sub th{padding:5px 7px;font-size:12px}
 .igp-bar{height:4px;background:rgba(128,128,128,.2);border-radius:3px;margin-top:4px;min-width:50px}.igp-bar i{display:block;height:100%;border-radius:3px}.igp-bd{border:1px solid;border-radius:12px;padding:2px 8px;font-size:11px;white-space:nowrap}.igp-foot{margin-top:14px;font-size:11.5px;color:var(--text3);line-height:1.6}
 </style>
+<style id="mf-fabprod-css">
+.fab-kpi{cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;user-select:none}
+.fab-kpi:hover{border-color:var(--gold);transform:translateY(-2px)}
+.fab-kpi.active{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,160,23,.35);background:rgba(212,160,23,.07)}
+#fab-filter-bar{display:none;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:8px 12px;border:1px dashed var(--gold);border-radius:8px;background:rgba(212,160,23,.06)}
+.mf-fchip{display:inline-block;font-size:11px;padding:2px 9px;border-radius:12px;background:var(--bg3);border:1px solid var(--border)}
+#mf-save-chip{position:fixed;left:14px;bottom:14px;z-index:99999;max-width:min(380px,92vw);display:none;flex-direction:column;gap:6px}
+.mf-job{background:var(--bg2,#161b22);border:1px solid var(--border,#30363d);border-radius:8px;padding:7px 10px;font-size:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+.mf-job.bad{border-color:var(--red,#f85149)}.mf-job-t{flex:1;min-width:120px}
+#modal-mf-backup .modal{max-width:840px;width:96vw;max-height:92vh;display:flex;flex-direction:column}
+#modal-mf-backup .modal-body{overflow:auto}
+#modal-prod-detail .modal{max-width:760px;width:96vw;max-height:92vh;display:flex;flex-direction:column}
+#modal-prod-detail .modal-body{overflow:auto}
+#modal-prod-detail th,#modal-prod-detail td{padding:5px 6px;border-bottom:1px solid var(--border)}
+#mfr-result th,#mfr-result td{padding:5px 6px;border-bottom:1px solid var(--border)}
+.mf-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:13px}
+.mf-row label{display:flex;gap:6px;align-items:center;cursor:pointer}
+@media(max-width:640px){#fab-filter-bar{gap:6px}}
+</style>
 </head>
 <body>
 
@@ -2621,10 +2640,13 @@ tbody td.muted{color:var(--text3);}
 
       <div class="table-wrapper" style="margin-top:20px;">
         <div class="table-header">
-          <span class="table-title">প্রোডাকশন ব্যাচ (সর্বশেষ ২০০টি)</span>
+          <span class="table-title" id="pmod-batch-title">প্রোডাকশন ব্যাচ</span>
           <div class="table-actions">
             <button class="btn success" onclick="prodOpenBatch()">➕ নতুন প্রোডাকশন</button>
-            <button class="btn export-excel" onclick="prodExportBatches()">📥 Excel (CSV)</button>
+            <button class="btn export-excel" onclick="mfBackupQuick('prod')" title="প্রোডাকশনের সম্পূর্ণ ডেটাসহ পূর্ণ Excel ব্যাকআপ">📥 Excel</button>
+            <button class="btn" onclick="mfBackupOpen('prod','restore')" title="CSV/Excel থেকে ডেটা ফেরত আনুন">📤 CSV Import</button>
+            <button class="btn" onclick="mfBackupOpen('prod','backup')" title="তারিখ-ভিত্তিক ব্যাকআপ ও রিস্টোর">💾 Backup / Restore</button>
+            <button class="btn" onclick="prodPrint()">🖨 Print</button>
           </div>
         </div>
         <div class="table-scroll">
@@ -2660,7 +2682,10 @@ tbody td.muted{color:var(--text3);}
             <button class="btn primary" onclick="fabOpenItem()">+ নতুন কাপড়</button>
             <button class="btn success" onclick="fabOpenEntry('','Purchase')">➕ ক্রয় (গজ যোগ)</button>
             <button class="btn danger" onclick="fabOpenEntry('','Used')">➖ ব্যবহার</button>
-            <button class="btn export-excel" onclick="fabExportItems()">📥 Excel (CSV)</button>
+            <button class="btn export-excel" onclick="mfBackupQuick('fab')" title="কাপড় + সম্পূর্ণ লেনদেনসহ পূর্ণ Excel ব্যাকআপ">📥 Excel</button>
+            <button class="btn" onclick="mfBackupOpen('fab','restore')" title="CSV/Excel থেকে ডেটা ফেরত আনুন">📤 CSV Import</button>
+            <button class="btn" onclick="mfBackupOpen('fab','backup')" title="তারিখ-ভিত্তিক ব্যাকআপ ও রিস্টোর">💾 Backup / Restore</button>
+            <button class="btn" onclick="fabPrint()">🖨 Print</button>
           </div>
         </div>
         <div class="table-scroll">
@@ -2679,16 +2704,17 @@ tbody td.muted{color:var(--text3);}
 
       <div class="table-wrapper" style="margin-top:20px;">
         <div class="table-header">
-          <span class="table-title">লেনদেনের ইতিহাস (সর্বশেষ ১০০টি)</span>
+          <span class="table-title" id="fab-ledger-title">লেনদেনের ইতিহাস</span>
           <div class="table-actions">
             <select class="form-select" id="fab-ledger-filter" onchange="fabRenderLedger()" style="width:220px;padding:6px 10px;font-size:12px;"><option value="">সব কাপড়</option></select>
-            <button class="btn export-excel" onclick="fabExportLedger()">📥 Excel (CSV)</button>
+            <button class="btn export-excel" onclick="mfBackupQuick('fab')">📥 Excel</button>
+            <button class="btn" onclick="fabPrint()">🖨 Print</button>
           </div>
         </div>
         <div class="table-scroll">
           <table>
             <thead>
-              <tr><th>তারিখ</th><th>কাপড়</th><th>ধরন</th><th>গজ</th><th>দাম/গজ</th><th>টাকা</th><th>বিবরণ</th><th></th></tr>
+              <tr><th>তারিখ</th><th>কাপড়</th><th>ধরন</th><th>গজ</th><th>দাম/গজ</th><th>টাকা</th><th>বিবরণ</th><th>এন্ট্রি সময়</th><th></th></tr>
             </thead>
             <tbody id="fab-ledger-body"></tbody>
           </table>
@@ -5199,7 +5225,7 @@ tbody td.muted{color:var(--text3);}
 <div class="modal-overlay" id="modal-prod-batch">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">🏭 নতুন প্রোডাকশন</span>
+      <span class="modal-title" id="pb-title">🏭 নতুন প্রোডাকশন</span>
       <button class="modal-close" onclick="closeModal('prod-batch')">✕</button>
     </div>
     <div class="modal-body">
@@ -5220,6 +5246,7 @@ tbody td.muted{color:var(--text3);}
         <div class="form-group full"><label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:13px;"><input type="checkbox" id="pb-stockin" checked onchange="prodBatchHints()"> তৈরি পিস বিক্রির স্টকে (Inventory) যোগ করুন</label></div>
         <div class="form-group" id="pb-color-g"><label class="form-label">বিক্রির কালার / ভ্যারিয়েন্ট নাম *</label><input class="form-input" id="pb-color" type="text" maxlength="40" placeholder="যেমন: Navy Blue" oninput="prodBatchHints()"></div>
       </div>
+      <div class="alert-box info" id="pb-edit-note" style="display:none;margin-top:12px;"></div>
       <div class="alert-box info" id="pb-summary" style="margin-top:12px;">—</div>
     </div>
     <div class="modal-footer">
@@ -5247,6 +5274,74 @@ tbody td.muted{color:var(--text3);}
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('prod-stockin')">Cancel</button>
       <button class="btn primary" id="psi-save" onclick="prodSaveStockIn()">📦 স্টকে যোগ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BATCH DETAIL ═══ -->
+<div class="modal-overlay" id="modal-prod-detail">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">🏭 ব্যাচ বিস্তারিত</span><button class="modal-close" onclick="closeModal('prod-detail')">✕</button></div>
+    <div class="modal-body" id="pd-body"></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('prod-detail')">বন্ধ</button><button class="btn" id="pd-print">🖨 Print</button><button class="btn primary" id="pd-edit">✏️ এডিট</button></div>
+  </div>
+</div>
+
+<!-- ═══ BACKUP & RESTORE ═══ -->
+<div class="modal-overlay" id="modal-mf-backup">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">💾 Backup, Restore &amp; Data Migration</span><button class="modal-close" onclick="closeModal('mf-backup')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn primary" id="mfb-t-backup" onclick="mfBkTab('backup')">📥 ব্যাকআপ নিন</button>
+        <button class="btn" id="mfb-t-restore" onclick="mfBkTab('restore')">📤 রিস্টোর / ইমপোর্ট</button>
+      </div>
+      <div id="mfb-p-backup">
+        <div class="mf-row"><strong>মডিউল:</strong>
+          <label><input type="radio" name="mfb-mod" value="fab"> 🧵 Fabric Stock</label>
+          <label><input type="radio" name="mfb-mod" value="prod"> 🏭 Production</label>
+          <label><input type="radio" name="mfb-mod" value="both" checked> উভয়</label></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">ব্যাকআপের ধরন</label>
+            <select class="form-select" id="mfb-type" onchange="mfBkType()">
+              <option value="full">Full Backup (সব ডেটা)</option><option value="custom">Custom Date Range</option>
+              <option value="single">Single Date (একটি দিন)</option><option value="quick">Quick Date Filter</option></select></div>
+          <div class="form-group"><label class="form-label">ফরম্যাট</label>
+            <select class="form-select" id="mfb-fmt"><option value="xlsx">Excel (.xlsx) — একাধিক শিট</option><option value="csv">CSV সেট (প্রতি টেবিল আলাদা ফাইল)</option></select></div>
+        </div>
+        <div class="form-grid" id="mfb-custom" style="display:none;">
+          <div class="form-group"><label class="form-label">From Date</label><input class="form-input" type="date" id="mfb-from"></div>
+          <div class="form-group"><label class="form-label">To Date</label><input class="form-input" type="date" id="mfb-to"></div></div>
+        <div class="form-grid" id="mfb-single" style="display:none;"><div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" type="date" id="mfb-day"></div></div>
+        <div class="form-grid" id="mfb-quick" style="display:none;"><div class="form-group"><label class="form-label">কুইক ফিল্টার</label>
+          <select class="form-select" id="mfb-qk"><option value="today">Today</option><option value="last7">Last 7 Days</option><option value="last30">Last 30 Days</option><option value="month">This Month</option><option value="prevmonth">Previous Month</option><option value="year">This Year</option></select></div></div>
+        <div class="alert-box info" style="margin-top:6px;"><div style="line-height:1.7;font-size:12px;">Date Range ব্যাকআপে নির্বাচিত সময়ের লেনদেন/ব্যাচ + তাদের প্রয়োজনীয় রেফারেন্স (Fabric ID, Batch ID, Type, Lines, Variant) এবং প্রতিটি কাপড়ের <strong>Opening / Closing Balance</strong> থাকে। এটি Full Backup-এর সমতুল্য নয় — রিস্টোর শুধু <strong>Merge</strong> মোডে।</div></div>
+        <div id="mfb-count" style="margin:10px 0;"></div>
+      </div>
+      <div id="mfb-p-restore" style="display:none;">
+        <div class="form-group full"><label class="form-label">ব্যাকআপ ফাইল (একসাথে একাধিক CSV অথবা একটি .xlsx)</label>
+          <input class="form-input" type="file" id="mfr-file" accept=".csv,.xlsx,.xls,.txt" multiple onchange="mfRestoreFiles(this.files)"></div>
+        <div id="mfr-files" style="margin:8px 0;"></div>
+        <div class="alert-box danger" id="mfr-warn" style="display:none;"><div style="line-height:1.7;font-size:12px;">⚠ এটি <strong>Filtered (তারিখ-ভিত্তিক)</strong> ব্যাকআপ — Full Restore নয়। শুধু Merge মোড চলবে; Opening Balance না মিললে নিচের অপশনটি দেখুন।</div></div>
+        <div class="mf-row"><strong>মোড:</strong>
+          <label><input type="radio" name="mfr-mode" value="merge" checked onchange="mfRModeChanged()"> Merge (বিদ্যমান ডেটা রেখে নতুন যোগ)</label>
+          <label><input type="radio" name="mfr-mode" value="replace" onchange="mfRModeChanged()"> Restore / Replace (প্রতিস্থাপন)</label></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">কোন মডিউলে</label><select class="form-select" id="mfr-scope" onchange="mfRModeChanged()"><option value="both">উভয়</option><option value="fab">Fabric Stock</option><option value="prod">Production</option></select></div>
+          <div class="form-group"><label class="form-label">আগে থেকে থাকা ID হলে (শুধু কাপড়/ধরন/সাইজের বিবরণ)</label><select class="form-select" id="mfr-dup"><option value="skip">Skip (বিদ্যমান অপরিবর্তিত)</option><option value="update">Update (বিবরণ হালনাগাদ)</option></select></div>
+        </div>
+        <div class="mf-row"><label><input type="checkbox" id="mfr-strict" checked> Strict: কোনো ভুল/দ্বন্দ্ব থাকলে পুরো Import বন্ধ</label>
+          <label><input type="checkbox" id="mfr-fix"> Opening Balance না মিললে ঘাটতি এন্ট্রি যোগ করুন (Filtered ব্যাকআপে)</label></div>
+        <div class="form-group" id="mfr-confirm-g" style="display:none;"><label class="form-label">নিশ্চিত করতে <strong>RESTORE</strong> লিখুন (আগে Recovery কপি রাখা হবে)</label><input class="form-input" id="mfr-confirm" type="text" autocomplete="off" placeholder="RESTORE"></div>
+        <div class="alert-box info"><div style="line-height:1.7;font-size:12px;">Inventory শিটের পরিমাণ রিস্টোরে বদলায় না (ডাবল স্টক-ইন এড়াতে)। একই ব্যাকআপ দুইবার Import করলে ডুপ্লিকেট হয় না। প্রথমে “যাচাই (Preview)” চালান।</div></div>
+        <div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;"><button class="btn" id="mfr-prev" disabled onclick="mfRPreview()">🔍 যাচাই (Preview)</button><button class="btn danger" id="mfr-go" disabled onclick="mfRGo()">♻️ Import / Restore শুরু</button></div>
+        <div id="mfr-result"></div>
+      </div>
+      <div id="mfb-prog" style="display:none;margin-top:10px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('mf-backup')">বন্ধ</button>
+      <span id="mfb-btns-backup" style="display:contents;"><button class="btn" onclick="mfBkPreview()">🔍 Record Preview</button><button class="btn primary" onclick="mfBkExport()">📥 Export Backup</button></span>
     </div>
   </div>
 </div>
@@ -6141,7 +6236,7 @@ tbody td.muted{color:var(--text3);}
 // ═══════════════════════════════════════════════════════════════
 
 // ⚠️ এখানে আপনার Google Apps Script Web App URL বসান (Deploy > New Deployment > Web App)
-      const API_URL = "https://script.google.com/macros/s/AKfycbzleDlAcoxcYcmdxgvJZb6Hf7-1xXvAbH9fxT7nNF28QioWYWtq05h4YZQufcPHR0d9/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
+      const API_URL = "https://script.google.com/macros/s/AKfycbyjxNvslEWYbAGgzZ3CvdNAcCYr9wth43zf2S7gSyVQ0goGHB384iKg0JeVNVUOwzBN/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
 
 // ─── CONNECTION STATE ────────────────────────────────────────
 let apiConnected = false;
@@ -18680,13 +18775,194 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
 </script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
-   🧵 FABRIC STOCK MODULE (কাপড়ের স্টক) — independent, namespaced.
-   Uses only existing app helpers: fetchFromAPI, postToAPI, openModal,
-   closeModal, showToast, logAction. Touches no other module's data.
+   🧰 MF CORE (কাপড়ের স্টক + প্রোডাকশন): তারিখ ফরম্যাট (Asia/Dhaka), ব্যাকগ্রাউন্ড সেভ কিউ,
+   CSV/XLSX সহায়ক, প্রিন্ট সহায়ক। অন্য কোনো মডিউলের ডেটা/ফাংশনে হাত দেয় না।
 ═══════════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
-  var S = { items:[], ledger:[], loaded:false, busy:false };
+  var TZ='Asia/Dhaka';
+  var MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  function p2(n){ n=String(n); return n.length<2?'0'+n:n; }
+  function dhaka(d){
+    var o={}; new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'})
+      .formatToParts(d).forEach(function(x){ o[x.type]=x.value; });
+    return {y:o.year,m:o.month,d:o.day,h:parseInt(o.hour,10)%24,mi:o.minute,t:true};
+  }
+  // যেকোনো মান → {y,m,d,h,mi,t(সময় আছে কি)} অথবা null
+  function parse(v){
+    if(v===null||v===undefined||v==='') return null;
+    if(v instanceof Date) return isNaN(v.getTime())?null:dhaka(v);
+    var s=String(v).trim(), m;
+    if((m=/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(s))) return {y:m[1],m:p2(m[2]),d:p2(m[3]),h:m[4]!==undefined?+m[4]:0,mi:m[5]||'00',t:m[4]!==undefined};
+    if((m=/^(\d{1,2})[\-\s]([A-Za-z]{3})[A-Za-z]*[\-\s](\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/.exec(s)) && MON[m[2].toLowerCase()]){
+      var h=m[4]!==undefined?+m[4]:0; if(m[7]){ var pm=/p/i.test(m[7]); if(pm&&h<12)h+=12; if(!pm&&h===12)h=0; }
+      return {y:m[3],m:p2(MON[m[2].toLowerCase()]),d:p2(m[1]),h:h,mi:m[5]||'00',t:m[4]!==undefined};
+    }
+    if((m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/.exec(s))){
+      var h2=m[4]!==undefined?+m[4]:0; if(m[7]){ var pm2=/p/i.test(m[7]); if(pm2&&h2<12)h2+=12; if(!pm2&&h2===12)h2=0; }
+      return {y:m[3],m:p2(m[2]),d:p2(m[1]),h:h2,mi:m[5]||'00',t:m[4]!==undefined};
+    }
+    var dt=new Date(s); if(!isNaN(dt.getTime())) return dhaka(dt);
+    return null;
+  }
+  function t12(p){ var h=p.h%12||12; return p2(h)+':'+p.mi+' '+(p.h>=12?'PM':'AM'); }
+  window.mfFmtDate=function(v){ var p=parse(v); if(!p) return v==null?'':String(v); return p.d+'/'+p.m+'/'+p.y; };
+  window.mfFmtDT=function(v){ var p=parse(v); if(!p) return v==null?'':String(v); return p.d+'/'+p.m+'/'+p.y+(p.t?', '+t12(p):''); };
+  window.mfIsoDate=function(v){ var p=parse(v); return p?p.y+'-'+p.m+'-'+p.d:''; };
+  window.mfToday=function(){ var p=dhaka(new Date()); return p.y+'-'+p.m+'-'+p.d; };
+  window.mfStamp=function(){ var d=dhaka(new Date()); return d.y+d.m+d.d+'-'+p2(d.h)+d.mi; };
+
+  /* ── HTML escape ── */
+  window.mfEsc=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  /* ── CSV ── */
+  window.mfCsvParse=function(text){
+    text=String(text||'').replace(/^\uFEFF/,'');
+    var rows=[], row=[], cur='', q=false, i=0, c;
+    while(i<text.length){
+      c=text[i];
+      if(q){
+        if(c==='"'){ if(text[i+1]==='"'){ cur+='"'; i+=2; continue; } q=false; i++; continue; }
+        cur+=c; i++; continue;
+      }
+      if(c==='"'){ q=true; i++; continue; }
+      if(c===','){ row.push(cur); cur=''; i++; continue; }
+      if(c==='\r'){ i++; continue; }
+      if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; i++; continue; }
+      cur+=c; i++;
+    }
+    if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  };
+  window.mfCsvBuild=function(rows){
+    function cell(c){ c=String(c==null?'':c); return /[",\r\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }
+    return '\uFEFF'+rows.map(function(r){ return r.map(cell).join(','); }).join('\r\n');
+  };
+  window.mfCsvDownload=function(name,rows){ window.mfDownload(name,new Blob([window.mfCsvBuild(rows)],{type:'text/csv;charset=utf-8'})); };
+  window.mfDownload=function(name,blob){
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },800);
+  };
+  var _xl=null;
+  window.mfLoadXLSX=function(){
+    if(window.XLSX) return Promise.resolve(window.XLSX);
+    if(_xl) return _xl;
+    _xl=new Promise(function(res,rej){
+      var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload=function(){ window.XLSX?res(window.XLSX):rej(new Error('XLSX লাইব্রেরি লোড হয়নি')); };
+      s.onerror=function(){ _xl=null; rej(new Error('Excel লাইব্রেরি লোড করা যায়নি (ইন্টারনেট/ব্লক) — CSV ফরম্যাট ব্যবহার করুন')); };
+      document.head.appendChild(s);
+    });
+    return _xl;
+  };
+
+  /* ── প্রিন্ট সহায়ক (নতুন উইন্ডো — সাইডবার/বাটন ছাড়া, PDF হিসেবেও সেভ করা যায়) ── */
+  window.mfPrintDoc=function(title,sub,html){
+    var w=window.open('','_blank');
+    if(!w){ if(window.showToast) showToast('পপ-আপ ব্লক করা আছে — অনুমতি দিন','error'); return false; }
+    var logo=window.RUH_LOGO_BLACK||'';
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MF FASHION '+mfEsc(title)+'</title>'
+     +'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet"><style>'
+     +'*{box-sizing:border-box}body{font-family:"Noto Sans Bengali","Segoe UI",sans-serif;color:#111;margin:0;padding:20px;font-size:12px}'
+     +'.hd{display:flex;align-items:center;gap:14px;padding-bottom:10px;border-bottom:3px solid #0f2a5c;margin-bottom:12px}.hd img{height:48px;width:auto}.hd b{display:block;font-size:18px;color:#0f2a5c}.hd span{font-size:11px;color:#555}'
+     +'h3{margin:16px 0 6px;font-size:14px;color:#0f2a5c}.bx{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}.b{border:1px solid #dfe5f0;border-radius:6px;padding:7px 9px;background:#f7f9fd;font-size:11px;line-height:1.5}'
+     +'table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}th{background:#0f2a5c;color:#fff;padding:5px 6px;text-align:left}td{padding:4px 6px;border-bottom:1px solid #e1e6ef;vertical-align:top}tr:nth-child(even) td{background:#f8f9fc}'
+     +'thead{display:table-header-group}tr{page-break-inside:avoid}.r{text-align:right}.det{page-break-inside:avoid;margin-bottom:14px;border:1px solid #dfe5f0;border-radius:6px;padding:8px}'
+     +'.ft{margin-top:12px;text-align:center;font-size:10px;color:#666;border-top:1px solid #e1e6ef;padding-top:6px}@media print{@page{margin:10mm}.nop{display:none}}</style></head><body>'
+     +'<div class="hd">'+(logo?'<img src="'+logo+'" alt="MF FASHION">':'<b>MF FASHION</b>')+'<div><b>'+mfEsc(title)+'</b><span>'+sub+' · প্রিন্ট: '+mfFmtDT(new Date())+'</span></div></div>'
+     +html+'<div class="ft">MF FASHION OS · '+mfEsc(title)+'</div>'
+     +'<script>window.onload=function(){setTimeout(function(){window.print();},600);};<\/script></body></html>');
+    w.document.close(); return true;
+  };
+
+  /* ═════ ব্যাকগ্রাউন্ড সেভ কিউ ═════
+     Save চাপলে মডাল সঙ্গে সঙ্গে বন্ধ → অনুরোধ পেছনে চলতে থাকে (ক্রমানুসারে, এক এক করে)।
+     একই অনুরোধ দুবার কিউতে ঢুকবে না; প্রতিটিতে cid থাকে, তাই নেটওয়ার্ক retry হলেও সার্ভারে ডুপ্লিকেট হয় না।
+     ব্যর্থ হলে ডেটা চিপে থাকে: “আবার চেষ্টা” অথবা “সম্পাদনা” (ফর্ম আবার খুলে)। */
+  var Q=[], cur=null, running=false, failed=[], sigs={}, seq=0, KEY='mf_fp_failed_v1';
+  function persist(){ try{ localStorage.setItem(KEY,JSON.stringify(failed.map(function(j){ return {id:j.id,title:j.title,payload:j.payload,ts:j.ts}; }))); }catch(e){} }
+  function chipBox(){ var c=document.getElementById('mf-save-chip'); if(!c){ c=document.createElement('div'); c.id='mf-save-chip'; document.body.appendChild(c); } return c; }
+  function render(){
+    var c=chipBox(), h='';
+    var list=[]; if(cur) list.push(cur); Q.forEach(function(j){list.push(j);}); failed.forEach(function(j){list.push(j);});
+    list.forEach(function(j){
+      var ic=j.state==='failed'?'❌':'⏳', cls=j.state==='failed'?' bad':'';
+      h+='<div class="mf-job'+cls+'"><span>'+ic+'</span><span class="mf-job-t">'+mfEsc(j.title)+(j.state==='failed'?' — সেভ হয়নি':(j.state==='running'?' — সেভ হচ্ছে…':' — অপেক্ষায়'))+'</span>';
+      if(j.state==='failed'){
+        h+='<button class="btn" style="padding:2px 8px;font-size:11px;" onclick="MFSave.retry(\''+j.id+'\')">🔁 আবার চেষ্টা</button>';
+        if(j.reopen) h+='<button class="btn" style="padding:2px 8px;font-size:11px;" onclick="MFSave.edit(\''+j.id+'\')">✏️ সম্পাদনা</button>';
+        h+='<button class="btn danger" style="padding:2px 8px;font-size:11px;" onclick="MFSave.drop(\''+j.id+'\')">✕</button>';
+      }
+      h+='</div>';
+    });
+    c.innerHTML=h; c.style.display=list.length?'flex':'none';
+  }
+  async function run(){
+    if(running) return; running=true;
+    while(Q.length){
+      cur=Q.shift(); cur.state='running'; render();
+      var r=false;
+      try{ r=await postToAPI(cur.payload); }catch(e){ r=false; }
+      delete sigs[cur.sig];
+      var j=cur; cur=null;
+      if(r){
+        j.state='ok';
+        try{ if(j.onDone) j.onDone(r); }catch(e1){ console.error(e1); }
+        if(window.showToast) if(j.okMsg!==false) showToast((j.okMsg||'✅ সেভ হয়েছে')+(r.duplicate?' (আগেই সেভ হয়েছিল — ডুপ্লিকেট হয়নি)':''));
+      }else{
+        j.state='failed'; j.ts=Date.now(); failed.push(j); persist();
+        if(window.showToast) showToast('❌ সেভ ব্যর্থ: '+j.title+' — ডেটা হারায়নি; নিচের বাটন থেকে আবার চেষ্টা/সম্পাদনা করুন','error');
+        try{ if(j.onFail) j.onFail(); }catch(e2){ console.error(e2); }
+      }
+      render();
+    }
+    running=false; render();
+  }
+  window.MFSave={
+    // job: {title, payload, okMsg, onDone(r), onFail(), reopen()}
+    enqueue:function(job){
+      var base=JSON.stringify(job.payload);
+      if(sigs[base]){ if(window.showToast) showToast('এই এন্ট্রি ইতিমধ্যে সেভ হচ্ছে — ডুপ্লিকেট করা হয়নি','info'); return false; }
+      job.sig=base; sigs[base]=1;
+      job.id='j'+(++seq)+'_'+Date.now().toString(36);
+      job.payload.cid='mf'+Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+      job.state='queued'; Q.push(job); render();
+      if(window.showToast) showToast('⏳ সেভ হচ্ছে… (পেছনে চলছে, আপনি অন্য কাজ করতে পারেন)','info');
+      run(); return true;
+    },
+    retry:function(id){
+      var i=failed.findIndex(function(j){return j.id===id;}); if(i<0) return;
+      var j=failed.splice(i,1)[0]; persist();
+      if(sigs[JSON.stringify(j.payload)]){ return; }
+      j.sig=JSON.stringify(j.payload); sigs[j.sig]=1; j.state='queued'; Q.push(j); render(); run();
+    },
+    edit:function(id){
+      var i=failed.findIndex(function(j){return j.id===id;}); if(i<0) return;
+      var j=failed.splice(i,1)[0]; persist(); render(); try{ if(j.reopen) j.reopen(); }catch(e){ console.error(e); }
+    },
+    drop:function(id){
+      if(!confirm('এই অসম্পন্ন সেভটি বাতিল করবেন? (ডেটা মুছে যাবে)')) return;
+      failed=failed.filter(function(j){return j.id!==id;}); persist(); render();
+    },
+    pending:function(){ return Q.length+(cur?1:0); },
+    restoreFailed:function(){
+      try{ var a=JSON.parse(localStorage.getItem(KEY)||'[]'); a.forEach(function(x){ x.state='failed'; failed.push(x); }); if(a.length){ render(); if(window.showToast) showToast('⚠️ আগের '+a.length+'টি অসম্পন্ন সেভ আছে — নিচের চিপ থেকে আবার চেষ্টা করুন','error'); } }catch(e){}
+    }
+  };
+  window.addEventListener('beforeunload',function(e){ if(Q.length||cur){ e.preventDefault(); e.returnValue='কিছু সেভ এখনো পেছনে চলছে — এখন বন্ধ করলে ডেটা হারাতে পারে'; return e.returnValue; } });
+  document.addEventListener('DOMContentLoaded',function(){ setTimeout(function(){ MFSave.restoreFailed(); },1500); });
+})();
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   🧵 FABRIC STOCK MODULE (কাপড়ের স্টক) — v3
+   • Save চাপলেই মডাল বন্ধ, সেভ পেছনে (MFSave কিউ) • ক্লিকযোগ্য KPI কার্ড + ফিল্টার/রিসেট
+   • তারিখ dd/MM/yyyy (Asia/Dhaka) • সম্পূর্ণ Excel/CSV/Backup/Print
+═══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var S = { items:[], ledger:[], loaded:false, busy:false, kpi:'', show:100, pn:0 };
   var TYPE = {
     Purchase :{ l:'ক্রয়',        c:'var(--green)'  },
     Used     :{ l:'ব্যবহার',     c:'var(--orange)' },
@@ -18694,17 +18970,18 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     AdjustIn :{ l:'সংশোধন (+)', c:'var(--blue)'   },
     AdjustOut:{ l:'সংশোধন (−)', c:'var(--blue)'   }
   };
+  var KPI_LABEL = { all:'সব কাপড়', stock:'স্টক আছে (গজ অনুযায়ী)', value:'স্টক মূল্য অনুযায়ী', low:'কম স্টক' };
   function $(id){ return document.getElementById(id); }
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  var esc = mfEsc;
   function n2(x){ x=Number(x)||0; return (Math.round(x*100)/100).toLocaleString('en-US',{maximumFractionDigits:2}); }
   function tk(x){ return '৳'+n2(x); }
-  function today(){ try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka'}).format(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } }
+  function today(){ return mfToday(); }
   function itemLabel(it){ return it.name+(it.color?' — '+it.color:''); }
   function findItem(id){ for(var i=0;i<S.items.length;i++){ if(S.items[i].id===id) return S.items[i]; } return null; }
 
-  /* ── load ─────────────────────────────────────────── */
+  /* ── load ── */
   async function load(silent){
-    var d = await fetchFromAPI('fab_stock',{ _:Date.now() });
+    var d = await fetchFromAPI('fab_stock',{ limit:1000, _:Date.now() });
     if(!d){
       if(!silent) showToast('কাপড়ের ডেটা লোড হয়নি — Google Sheets সংযোগ ও GS-এর নতুন ভার্সন Deploy করা আছে কি না দেখুন','error');
       S.loaded = false; renderAll(); return false;
@@ -18713,9 +18990,11 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     renderAll(); return true;
   }
   window.fabOpenPage = function(){ load(); };
+  window.fabReload = function(){ return load(true); };
 
-  /* ── render ───────────────────────────────────────── */
+  /* ── helpers ── */
   function statusOf(it){
+    if(it.pending)               return { t:'⏳ সেভ হচ্ছে', c:'var(--text3)' };
     if(it.stock<=0)              return { t:'শেষ',      c:'var(--red)'    };
     if(it.stock<=it.alert)       return { t:'⚠ কম',     c:'var(--red)'    };
     if(it.stock<=it.alert*2)     return { t:'সীমার কাছে', c:'var(--orange)' };
@@ -18723,18 +19002,55 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
   }
   function badge(txt,color){ return '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid '+color+';color:'+color+';">'+esc(txt)+'</span>'; }
 
+  /* ── ফিল্টার (KPI কার্ড + সার্চ) ── */
+  function filteredItems(){
+    var q=(($('fab-search')||{}).value||'').trim().toLowerCase();
+    var rows=S.items.filter(function(it){ return !q || (it.name+' '+it.color+' '+it.id).toLowerCase().indexOf(q)>=0; });
+    if(S.kpi==='all') rows=rows.slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+    else if(S.kpi==='stock') rows=rows.filter(function(i){return i.stock>0;}).sort(function(a,b){return b.stock-a.stock;});
+    else if(S.kpi==='value') rows=rows.filter(function(i){return i.value>0;}).sort(function(a,b){return b.value-a.value;});
+    else if(S.kpi==='low') rows=rows.filter(function(i){return i.stock<=i.alert;}).sort(function(a,b){return a.stock-b.stock;});
+    return rows;
+  }
+  function filteredLedger(){
+    var sel=($('fab-ledger-filter')||{}).value||'', ids=null;
+    if(S.kpi && S.kpi!=='all'){ ids={}; filteredItems().forEach(function(i){ ids[i.id]=1; }); }
+    return S.ledger.filter(function(l){
+      if(sel && l.itemId!==sel) return false;
+      if(ids && !ids[l.itemId]) return false;
+      if(S.kpi==='value' && l.type!=='Purchase') return false;
+      return true;
+    });
+  }
+  window.fabKpi = function(k){ S.kpi = (S.kpi===k)?'':k; S.show=100; renderAll(); var t=$('fab-body'); if(t&&t.scrollIntoView) t.closest('.table-wrapper').scrollIntoView({behavior:'smooth',block:'start'}); };
+  window.fabClearFilter = function(){ S.kpi=''; var s=$('fab-search'); if(s) s.value=''; var f=$('fab-ledger-filter'); if(f) f.value=''; S.show=100; renderAll(); };
+  window.fabMore = function(){ S.show+=200; window.fabRenderLedger(); };
+
+  function renderFilterBar(){
+    var bar=$('fab-filter-bar');
+    if(!bar){ bar=document.createElement('div'); bar.id='fab-filter-bar'; var k=$('fab-kpis'); k.parentNode.insertBefore(bar,k.nextSibling); }
+    var q=(($('fab-search')||{}).value||'').trim();
+    if(!S.kpi && !q){ bar.style.display='none'; return; }
+    var rows=filteredItems(), g=0, v=0; rows.forEach(function(i){ g+=i.stock; v+=i.value; });
+    bar.style.display='flex';
+    bar.innerHTML='<span class="mf-fchip">🔎 ফিল্টার চালু: <strong>'+esc((S.kpi?KPI_LABEL[S.kpi]:'')+(S.kpi&&q?' + ':'')+(q?'“'+q+'”':''))+'</strong></span>'+
+      '<span style="font-size:12px;color:var(--text2);">'+rows.length+'টি কাপড় · '+n2(g)+' গজ · '+tk(v)+'</span>'+
+      '<button class="btn" style="padding:3px 10px;font-size:12px;" onclick="fabClearFilter()">✕ ফিল্টার রিসেট</button>';
+  }
+
   function renderKpis(){
     var totalGaj=0,totalVal=0,low=0;
-    S.items.forEach(function(it){ totalGaj+=it.stock; totalVal+=it.value; if(it.stock<=it.alert) low++; });
-    function card(title,val,color){ return '<div class="inv-card" style="cursor:default;"><div class="inv-sku" style="margin-bottom:6px;">'+title+'</div><div style="font-size:22px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'+color+';">'+val+'</div></div>'; }
+    S.items.forEach(function(it){ if(it.pending) return; totalGaj+=it.stock; totalVal+=it.value; if(it.stock<=it.alert) low++; });
+    var cnt=S.items.filter(function(i){return !i.pending;}).length;
+    function card(key,title,val,color,hint){ return '<div class="inv-card fab-kpi'+(S.kpi===key?' active':'')+'" role="button" tabindex="0" title="'+hint+'" onclick="fabKpi(\''+key+'\')" onkeydown="if(event.key===\'Enter\')fabKpi(\''+key+'\')"><div class="inv-sku" style="margin-bottom:6px;">'+title+(S.kpi===key?' · ✔ ফিল্টার':'')+'</div><div style="font-size:22px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'+color+';">'+val+'</div></div>'; }
     $('fab-kpis').innerHTML =
-      card('কাপড়ের ধরন (নাম+কালার)', S.items.length, 'var(--text)') +
-      card('মোট স্টক', n2(totalGaj)+' গজ', 'var(--blue)') +
-      card('স্টক মূল্য (গড় দামে)', tk(totalVal), 'var(--gold)') +
-      card('কম স্টক', low, low>0?'var(--red)':'var(--green)');
+      card('all','কাপড়ের ধরন (নাম+কালার)', cnt, 'var(--text)','সব কাপড়ের তালিকা দেখান') +
+      card('stock','মোট স্টক', n2(totalGaj)+' গজ', 'var(--blue)','স্টক আছে এমন কাপড় (বেশি → কম)') +
+      card('value','স্টক মূল্য (গড় দামে)', tk(totalVal), 'var(--gold)','স্টক মূল্য অনুযায়ী তালিকা ও ক্রয়ের লেনদেন') +
+      card('low','কম স্টক', low, low>0?'var(--red)':'var(--green)','শুধু কম স্টকের কাপড় ও তাদের লেনদেন');
     var al=$('fab-low-alert');
     if(low>0){
-      var names=S.items.filter(function(it){return it.stock<=it.alert;}).slice(0,5).map(function(it){return itemLabel(it)+' ('+n2(it.stock)+' গজ)';}).join(', ');
+      var names=S.items.filter(function(it){return !it.pending&&it.stock<=it.alert;}).slice(0,5).map(function(it){return itemLabel(it)+' ('+n2(it.stock)+' গজ)';}).join(', ');
       $('fab-low-text').textContent = low+'টি কাপড়ের স্টক কম: '+names+(low>5?' …':'');
       al.style.display='block';
     } else al.style.display='none';
@@ -18742,17 +19058,16 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
   }
 
   window.fabRenderItems = function(){
-    var q=(($('fab-search')||{}).value||'').trim().toLowerCase();
-    var rows=S.items.filter(function(it){ return !q || (it.name+' '+it.color+' '+it.id).toLowerCase().indexOf(q)>=0; });
-    var tb=$('fab-body');
+    var rows=filteredItems(), tb=$('fab-body');
+    renderFilterBar();
     if(!S.items.length){
       tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:28px;">'+(S.loaded?'এখনো কোনো কাপড় যোগ করা হয়নি — “+ নতুন কাপড়” চাপুন':'ডেটা লোড হয়নি')+'</td></tr>'; return;
     }
-    if(!rows.length){ tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:20px;">কিছু পাওয়া যায়নি</td></tr>'; return; }
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:20px;">এই ফিল্টারে কিছু পাওয়া যায়নি</td></tr>'; return; }
     tb.innerHTML = rows.map(function(it){
       var st=statusOf(it), id=esc(it.id);
-      return '<tr>'+
-        '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;">'+id+'</td>'+
+      return '<tr'+(it.pending?' style="opacity:.6;"':'')+'>'+
+        '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;">'+(it.pending?'—':id)+'</td>'+
         '<td><strong>'+esc(it.name)+'</strong></td>'+
         '<td>'+(esc(it.color)||'—')+'</td>'+
         '<td style="font-weight:700;color:'+st.c+';">'+n2(it.stock)+'</td>'+
@@ -18762,76 +19077,81 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
         '<td>'+n2(it.used)+'</td>'+
         '<td>'+n2(it.waste)+'</td>'+
         '<td>'+badge(st.t,st.c)+'</td>'+
-        '<td style="white-space:nowrap;">'+
+        '<td style="white-space:nowrap;">'+(it.pending?'':
           '<button class="btn" title="ক্রয়" onclick="fabOpenEntry(\''+id+'\',\'Purchase\')">➕</button> '+
           '<button class="btn" title="ব্যবহার" onclick="fabOpenEntry(\''+id+'\',\'Used\')">➖</button> '+
-          '<button class="btn" title="সম্পাদনা" onclick="fabOpenItem(\''+id+'\')">✏️</button>'+
+          '<button class="btn" title="সম্পাদনা" onclick="fabOpenItem(\''+id+'\')">✏️</button>')+
         '</td></tr>';
     }).join('');
   };
 
   window.fabRenderLedger = function(){
     var sel=$('fab-ledger-filter'), cur=sel.value;
-    sel.innerHTML='<option value="">সব কাপড়</option>'+S.items.map(function(it){ return '<option value="'+esc(it.id)+'">'+esc(itemLabel(it))+'</option>'; }).join('');
+    sel.innerHTML='<option value="">সব কাপড়</option>'+S.items.filter(function(i){return !i.pending;}).map(function(it){ return '<option value="'+esc(it.id)+'">'+esc(itemLabel(it))+'</option>'; }).join('');
     sel.value = findItem(cur)?cur:'';
-    var rows=S.ledger.filter(function(l){ return !sel.value || l.itemId===sel.value; }).slice(0,100);
-    var tb=$('fab-ledger-body');
-    if(!rows.length){ tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px;">কোনো লেনদেন নেই</td></tr>'; return; }
+    var all=filteredLedger(), rows=all.slice(0,S.show), tb=$('fab-ledger-body');
+    var tt=$('fab-ledger-title'); if(tt) tt.textContent='লেনদেনের ইতিহাস ('+all.length+'টি'+(all.length>rows.length?', দেখানো '+rows.length:'')+')';
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:20px;">কোনো লেনদেন নেই</td></tr>'; return; }
     tb.innerHTML = rows.map(function(l){
       var t=TYPE[l.type]||{l:l.type,c:'var(--text2)'};
       var det=[l.supplier,l.ref,l.note].filter(Boolean).map(esc).join(' · ');
-      return '<tr>'+
-        '<td style="white-space:nowrap;">'+esc(l.date)+'</td>'+
+      return '<tr'+(l.pending?' style="opacity:.6;"':'')+'>'+
+        '<td style="white-space:nowrap;">'+esc(mfFmtDate(l.date))+'</td>'+
         '<td>'+esc(l.itemName)+(l.color?' <span style="color:var(--text3);">— '+esc(l.color)+'</span>':'')+'</td>'+
         '<td>'+badge(t.l,t.c)+'</td>'+
         '<td style="font-weight:700;color:'+(l.qty>=0?'var(--green)':'var(--red)')+';">'+(l.qty>=0?'+':'')+n2(l.qty)+'</td>'+
         '<td>'+(l.rate?tk(l.rate):'—')+'</td>'+
         '<td>'+(l.amount?tk(l.amount):'—')+'</td>'+
         '<td style="font-size:11px;color:var(--text2);">'+(det||'—')+'</td>'+
-        '<td><button class="btn danger" title="মুছুন" onclick="fabDeleteEntry(\''+esc(l.id)+'\')">🗑</button></td></tr>';
-    }).join('');
+        '<td style="font-size:11px;white-space:nowrap;color:var(--text3);">'+(l.pending?'⏳ সেভ হচ্ছে':esc(mfFmtDT(l.entryAt)))+'</td>'+
+        '<td>'+(l.pending?'':'<button class="btn danger" title="মুছুন" onclick="fabDeleteEntry(\''+esc(l.id)+'\')">🗑</button>')+'</td></tr>';
+    }).join('') + (all.length>rows.length?'<tr><td colspan="9" style="text-align:center;padding:10px;"><button class="btn" onclick="fabMore()">আরও দেখান ('+(all.length-rows.length)+'টি বাকি)</button></td></tr>':'');
   };
 
   function renderAll(){ renderKpis(); window.fabRenderItems(); window.fabRenderLedger(); }
 
-  /* ── item modal (add / edit) ──────────────────────── */
-  window.fabOpenItem = function(id){
-    var it = id ? findItem(id) : null;
+  /* ── নতুন কাপড় / এডিট মডাল ── */
+  window.fabOpenItem = function(id, prefill){
+    var it = id ? findItem(id) : null, src = prefill || (it?{name:it.name,color:it.color,alert:it.alert,supplier:it.supplier,notes:it.notes}:null);
     $('fab-i-id').value      = it?it.id:'';
-    $('fab-i-name').value    = it?it.name:'';
-    $('fab-i-color').value   = it?it.color:'';
-    $('fab-i-alert').value   = it?it.alert:5;
-    $('fab-i-supplier').value= it?it.supplier:'';
-    $('fab-i-notes').value   = it?it.notes:'';
-    $('fab-i-opening').value=''; $('fab-i-openrate').value='';
+    $('fab-i-name').value    = src?src.name:'';
+    $('fab-i-color').value   = src?src.color:'';
+    $('fab-i-alert').value   = src&&src.alert!==undefined?src.alert:5;
+    $('fab-i-supplier').value= src?src.supplier:'';
+    $('fab-i-notes').value   = src?src.notes:'';
+    $('fab-i-opening').value = prefill&&prefill.opening?prefill.opening:''; $('fab-i-openrate').value = prefill&&prefill.openingRate?prefill.openingRate:'';
     $('fab-i-open-g1').style.display = $('fab-i-open-g2').style.display = it?'none':'';
     $('fab-i-title').textContent = it?'✏️ কাপড়ের তথ্য সম্পাদনা':'🧵 নতুন কাপড় যোগ করুন';
     openModal('fabric-item');
   };
-  window.fabSaveItem = async function(){
-    if(S.busy) return;
+  window.fabSaveItem = function(){
     var id=$('fab-i-id').value, name=$('fab-i-name').value.trim();
     if(!name){ showToast('কাপড়ের নাম দিন','error'); return; }
     var opening=parseFloat($('fab-i-opening').value)||0, orate=parseFloat($('fab-i-openrate').value)||0;
     if(!id && opening>0 && !(orate>0)){ showToast('বর্তমান স্টক দিলে গজ প্রতি দাম দিন — নইলে গড় দাম ভুল হবে','error'); return; }
-    var payload={ action:id?'fab_updateItem':'fab_addItem', id:id, name:name, color:$('fab-i-color').value.trim(),
-      alert:parseFloat($('fab-i-alert').value), supplier:$('fab-i-supplier').value.trim(), notes:$('fab-i-notes').value.trim() };
+    var form={ name:name, color:$('fab-i-color').value.trim(), alert:parseFloat($('fab-i-alert').value), supplier:$('fab-i-supplier').value.trim(), notes:$('fab-i-notes').value.trim(), opening:opening, openingRate:orate };
+    var payload={ action:id?'fab_updateItem':'fab_addItem', id:id, name:form.name, color:form.color, alert:form.alert, supplier:form.supplier, notes:form.notes };
     if(!id){ payload.opening=opening; payload.openingRate=orate; payload.date=today(); }
-    S.busy=true; var btn=$('fab-i-save'); btn.disabled=true;
-    var r=await postToAPI(payload);
-    S.busy=false; btn.disabled=false;
-    if(r){ closeModal('fabric-item'); showToast('✅ '+(id?'আপডেট হয়েছে':'কাপড় যোগ হয়েছে')); try{logAction('কাপড়: '+(id?'সম্পাদনা':'নতুন')+' — '+name);}catch(e){} await load(true); }
+    var pend=null;
+    if(!id){ pend={ id:'~p'+(++S.pn), name:name, color:form.color, alert:form.alert, stock:opening, avgRate:orate, value:opening*orate, purchased:opening, used:0, waste:0, pending:true }; S.items.push(pend); renderAll(); }
+    closeModal('fabric-item');                       // ⚡ সঙ্গে সঙ্গে বন্ধ
+    MFSave.enqueue({ title:'কাপড়: '+name, payload:payload, okMsg:'✅ '+(id?'কাপড় আপডেট হয়েছে':'কাপড় যোগ হয়েছে'),
+      onDone:function(){ try{logAction('কাপড়: '+(id?'সম্পাদনা':'নতুন')+' — '+name);}catch(e){} load(true); },
+      onFail:function(){ load(true); },
+      reopen:function(){ window.fabOpenItem(id, form); } });
   };
 
-  /* ── entry modal (purchase / use / waste / adjust) ── */
-  window.fabOpenEntry = function(itemId,type){
-    if(!S.items.length){ showToast('আগে একটি কাপড় যোগ করুন','info'); window.fabOpenItem(); return; }
-    $('fab-e-item').innerHTML = S.items.map(function(it){ return '<option value="'+esc(it.id)+'">'+esc(itemLabel(it))+' ('+n2(it.stock)+' গজ)</option>'; }).join('');
+  /* ── এন্ট্রি মডাল (ক্রয় / ব্যবহার / অপচয় / সংশোধন) ── */
+  window.fabOpenEntry = function(itemId,type,prefill){
+    var list=S.items.filter(function(i){return !i.pending;});
+    if(!list.length){ showToast('আগে একটি কাপড় যোগ করুন','info'); window.fabOpenItem(); return; }
+    $('fab-e-item').innerHTML = list.map(function(it){ return '<option value="'+esc(it.id)+'">'+esc(itemLabel(it))+' ('+n2(it.stock)+' গজ)</option>'; }).join('');
     if(itemId && findItem(itemId)) $('fab-e-item').value=itemId;
     $('fab-e-type').value = type||'Purchase';
     $('fab-e-date').value = today(); $('fab-e-date').max = today();
     ['fab-e-qty','fab-e-rate','fab-e-supplier','fab-e-ref','fab-e-note'].forEach(function(i){ $(i).value=''; });
     var it=findItem($('fab-e-item').value); if(it && $('fab-e-type').value==='Purchase'){ $('fab-e-supplier').value=it.supplier||''; if(it.lastRate) $('fab-e-rate').value=it.lastRate; }
+    if(prefill){ $('fab-e-item').value=prefill.itemId; $('fab-e-type').value=prefill.type; $('fab-e-date').value=prefill.date; $('fab-e-qty').value=prefill.qty; $('fab-e-rate').value=prefill.rate||''; $('fab-e-supplier').value=prefill.supplier||''; $('fab-e-ref').value=prefill.ref||''; $('fab-e-note').value=prefill.note||''; }
     window.fabEntryChanged(); openModal('fabric-entry');
   };
   window.fabEntryChanged = function(){
@@ -18849,64 +19169,72 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     }
     h.innerHTML='<div style="line-height:1.7;">'+(txt||'—')+'</div>';
   };
-  window.fabSaveEntry = async function(){
-    if(S.busy) return;
+  window.fabSaveEntry = function(){
     var itemId=$('fab-e-item').value, type=$('fab-e-type').value, qty=parseFloat($('fab-e-qty').value), rate=parseFloat($('fab-e-rate').value);
     var it=findItem(itemId);
     if(!it){ showToast('কাপড় বেছে নিন','error'); return; }
     if(!(qty>0)){ showToast('গজের পরিমাণ দিন','error'); return; }
     if(type==='Purchase' && !(rate>=0)){ showToast('গজ প্রতি দাম দিন','error'); return; }
     if((type==='Used'||type==='Wastage'||type==='AdjustOut') && qty>it.stock+0.0001){ showToast('স্টকে মাত্র '+n2(it.stock)+' গজ আছে','error'); return; }
-    S.busy=true; var btn=$('fab-e-save'); btn.disabled=true;
-    var r=await postToAPI({ action:'fab_entry', itemId:itemId, type:type, qty:qty, rate:rate, date:$('fab-e-date').value,
-      supplier:$('fab-e-supplier').value.trim(), ref:$('fab-e-ref').value.trim(), note:$('fab-e-note').value.trim() });
-    S.busy=false; btn.disabled=false;
-    if(r){ closeModal('fabric-entry'); showToast('✅ '+(TYPE[type]||{l:type}).l+' এন্ট্রি সেভ হয়েছে'); try{logAction('কাপড় '+(TYPE[type]||{l:type}).l+': '+itemLabel(it)+' — '+n2(qty)+' গজ');}catch(e){} await load(true); }
+    var f={ itemId:itemId, type:type, qty:qty, rate:rate, date:$('fab-e-date').value, supplier:$('fab-e-supplier').value.trim(), ref:$('fab-e-ref').value.trim(), note:$('fab-e-note').value.trim() };
+    var payload={ action:'fab_entry', itemId:itemId, type:type, qty:qty, rate:rate, date:f.date, supplier:f.supplier, ref:f.ref, note:f.note };
+    // আশাবাদী (optimistic) প্রদর্শন — আসল হিসাব সার্ভার থেকে সফল হলে রিফ্রেশ হবে
+    var sign=(type==='Purchase'||type==='AdjustIn')?1:-1;
+    var r2=(type==='Purchase')?rate:it.avgRate;
+    if(type==='Purchase'){ var np=it.purchased+qty; it.avgRate=np>0?((it.avgRate*it.purchased)+qty*rate)/np:it.avgRate; it.purchased=np; }
+    else if(type==='Used') it.used+=qty; else if(type==='Wastage') it.waste+=qty;
+    it.stock=Math.round((it.stock+sign*qty)*100)/100; it.value=it.stock*it.avgRate;
+    S.ledger.unshift({ id:'~l'+(++S.pn), date:f.date, itemId:itemId, itemName:it.name, color:it.color, type:type, qty:sign*qty, rate:r2, amount:qty*r2, supplier:f.supplier, ref:f.ref, note:f.note, entryAt:'', pending:true });
+    renderAll();
+    closeModal('fabric-entry');                      // ⚡ সঙ্গে সঙ্গে বন্ধ
+    var lbl=(TYPE[type]||{l:type}).l;
+    MFSave.enqueue({ title:lbl+': '+itemLabel(it)+' — '+n2(qty)+' গজ', payload:payload, okMsg:'✅ '+lbl+' এন্ট্রি সেভ হয়েছে',
+      onDone:function(){ try{logAction('কাপড় '+lbl+': '+itemLabel(it)+' — '+n2(qty)+' গজ');}catch(e){} load(true); },
+      onFail:function(){ load(true); },
+      reopen:function(){ window.fabOpenEntry(itemId,type,f); } });
   };
 
-  window.fabDeleteEntry = async function(id){
-    if(S.busy) return;
+  window.fabDeleteEntry = function(id){
     if(!confirm('এই লেনদেনটি মুছে ফেলবেন? স্টক ও গড় দাম আবার হিসাব হবে।')) return;
-    S.busy=true; var r=await postToAPI({ action:'fab_deleteEntry', id:id }); S.busy=false;
-    if(r){ showToast('✅ এন্ট্রি মুছে ফেলা হয়েছে'); try{logAction('কাপড়ের এন্ট্রি মুছেছেন — '+id);}catch(e){} await load(true); }
+    MFSave.enqueue({ title:'এন্ট্রি মোছা ('+id+')', payload:{ action:'fab_deleteEntry', id:id }, okMsg:'✅ এন্ট্রি মুছে ফেলা হয়েছে',
+      onDone:function(){ try{logAction('কাপড়ের এন্ট্রি মুছেছেন — '+id);}catch(e){} load(true); } });
   };
 
-  /* ── Excel (CSV) এক্সপোর্ট ─────────────────────────────── */
-  window.mfCsvDownload = function(name, rows){
-    function cell(c){ c=String(c==null?'':c); return /[",\r\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }
-    var csv='\ufeff'+rows.map(function(r){ return r.map(cell).join(','); }).join('\r\n');   // BOM: বাংলা Excel-এ ঠিক দেখায়
-    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download=name;
-    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },600);
-  };
-  window.fabExportItems = function(){
-    if(!S.items.length){ showToast('এক্সপোর্ট করার মতো কাপড় নেই','info'); return; }
-    var rows=[['ID','কাপড়','কালার','স্টক (গজ)','গড় দাম/গজ','স্টক মূল্য','মোট ক্রয় (গজ)','ব্যবহৃত (গজ)','অপচয় (গজ)','সতর্কতা (গজ)','সাপ্লায়ার']];
-    S.items.forEach(function(it){ rows.push([it.id,it.name,it.color,it.stock,it.avgRate,it.value,it.purchased,it.used,it.waste,it.alert,it.supplier]); });
-    window.mfCsvDownload('MF_FASHION_Fabric_Stock_'+today()+'.csv',rows);
-  };
-  window.fabExportLedger = function(){
-    var sel=$('fab-ledger-filter').value, list=S.ledger.filter(function(l){ return !sel || l.itemId===sel; });
-    if(!list.length){ showToast('এক্সপোর্ট করার মতো লেনদেন নেই','info'); return; }
-    var rows=[['তারিখ','কাপড়','কালার','ধরন','গজ','দাম/গজ','টাকা','সাপ্লায়ার','রেফারেন্স','নোট']];
-    list.forEach(function(l){ rows.push([l.date,l.itemName,l.color,(TYPE[l.type]||{l:l.type}).l,l.qty,l.rate,l.amount,l.supplier,l.ref,l.note]); });
-    window.mfCsvDownload('MF_FASHION_Fabric_Ledger_'+today()+'.csv',rows);
+  /* ── Print: কাপড়ের তালিকা + সম্পূর্ণ লেনদেনের ইতিহাস ── */
+  window.fabPrint = async function(){
+    showToast('প্রিন্টের জন্য সম্পূর্ণ ডেটা আনা হচ্ছে…','info');
+    var d=await fetchFromAPI('fab_stock',{ limit:0, _:Date.now() });
+    if(!d){ showToast('ডেটা আনা যায়নি','error'); return; }
+    var items=d.items||[], ledger=d.ledger||[];
+    var shown=filteredItems(), ids={}; shown.forEach(function(i){ids[i.id]=1;});
+    var sel=($('fab-ledger-filter')||{}).value||'';
+    var filt=S.kpi||(($('fab-search')||{}).value||'').trim();
+    var itemsP = filt?items.filter(function(i){return ids[i.id];}):items;
+    var idp={}; itemsP.forEach(function(i){idp[i.id]=1;});
+    var led=ledger.filter(function(l){ if(sel&&l.itemId!==sel) return false; if(filt&&!idp[l.itemId]) return false; if(S.kpi==='value'&&l.type!=='Purchase') return false; return true; });
+    var g=0,v=0; itemsP.forEach(function(i){g+=i.stock;v+=i.value;});
+    var h='<div class="bx"><div class="b">কাপড়ের ধরন<br><b>'+itemsP.length+'</b></div><div class="b">মোট স্টক<br><b>'+n2(g)+' গজ</b></div><div class="b">স্টক মূল্য<br><b>'+tk(v)+'</b></div><div class="b">লেনদেন<br><b>'+led.length+'</b></div></div>';
+    if(filt) h+='<div style="font-size:11px;margin-bottom:6px;">ফিল্টার: '+esc((S.kpi?KPI_LABEL[S.kpi]:'')+' '+(($('fab-search')||{}).value||''))+'</div>';
+    h+='<h3>কাপড়ের তালিকা</h3><table><thead><tr><th>ID</th><th>কাপড়</th><th>কালার</th><th class="r">স্টক (গজ)</th><th class="r">গড় দাম</th><th class="r">স্টক মূল্য</th><th class="r">ক্রয়</th><th class="r">ব্যবহৃত</th><th class="r">অপচয়</th></tr></thead><tbody>'+
+      itemsP.map(function(i){ return '<tr><td>'+esc(i.id)+'</td><td>'+esc(i.name)+'</td><td>'+esc(i.color)+'</td><td class="r">'+n2(i.stock)+'</td><td class="r">'+n2(i.avgRate)+'</td><td class="r">'+n2(i.value)+'</td><td class="r">'+n2(i.purchased)+'</td><td class="r">'+n2(i.used)+'</td><td class="r">'+n2(i.waste)+'</td></tr>'; }).join('')+'</tbody></table>';
+    h+='<h3>লেনদেনের ইতিহাস ('+led.length+'টি)</h3><table><thead><tr><th>তারিখ</th><th>কাপড়</th><th>ধরন</th><th class="r">গজ</th><th class="r">দাম/গজ</th><th class="r">টাকা</th><th>বিবরণ</th><th>এন্ট্রি সময়</th></tr></thead><tbody>'+
+      led.map(function(l){ return '<tr><td>'+esc(mfFmtDate(l.date))+'</td><td>'+esc(l.itemName)+(l.color?' — '+esc(l.color):'')+'</td><td>'+esc((TYPE[l.type]||{l:l.type}).l)+'</td><td class="r">'+(l.qty>=0?'+':'')+n2(l.qty)+'</td><td class="r">'+(l.rate?n2(l.rate):'')+'</td><td class="r">'+(l.amount?n2(l.amount):'')+'</td><td>'+esc([l.supplier,l.ref,l.note].filter(Boolean).join(' · '))+'</td><td>'+esc(mfFmtDT(l.entryAt))+'</td></tr>'; }).join('')+'</tbody></table>';
+    mfPrintDoc('কাপড়ের স্টক রিপোর্ট','কাপড়ের তালিকা ও লেনদেন',h);
+    try{logAction('কাপড়ের স্টক প্রিন্ট করেছেন');}catch(e){}
   };
 })();
+
 </script>
 <script>
-/* ═══════════════════════════════════════════════════════════════════
-   🏭 PRODUCTION MODULE — সাইজ চার্ট, প্রোডাকশন ব্যাচ, প্রতি পিসের খরচ
-   Independent & namespaced. Uses only existing helpers:
-   fetchFromAPI, postToAPI, openModal, closeModal, showToast, logAction.
-═══════════════════════════════════════════════════════════════════ */
+/* ═══ 🏭 PRODUCTION MODULE (v3) — সাইজ চার্ট, প্রোডাকশন ব্যাচ (এডিট সহ), প্রতি পিসের খরচ ═══ */
 (function(){
   'use strict';
-  var P = { types:[], batches:[], fabrics:[], variants:[], loaded:false, busy:false };
+  var P = { types:[], batches:[], fabrics:[], variants:[], loaded:false, busy:false, edit:null, pn:0 };
   function $(id){ return document.getElementById(id); }
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  var esc = mfEsc;
   function n2(x){ x=Number(x)||0; return (Math.round(x*100)/100).toLocaleString('en-US',{maximumFractionDigits:2}); }
   function tk(x){ return '৳'+n2(x); }
-  function today(){ try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka'}).format(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } }
+  function today(){ return mfToday(); }
   function typeById(id){ for(var i=0;i<P.types.length;i++){ if(P.types[i].id===id) return P.types[i]; } return null; }
   function fabById(id){ for(var i=0;i<P.fabrics.length;i++){ if(P.fabrics[i].id===id) return P.fabrics[i]; } return null; }
   function fabLabel(f){ return f.name+(f.color?' — '+f.color:''); }
@@ -18916,7 +19244,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
 
   /* ── load ─────────────────────────────────────────── */
   async function load(silent){
-    var d = await fetchFromAPI('prod_data',{ _:Date.now() });
+    var d = await fetchFromAPI('prod_data',{ limit:500, _:Date.now() });
     if(!d){
       if(!silent) showToast('প্রোডাকশন ডেটা লোড হয়নি — Google Sheets সংযোগ ও GS-এর নতুন ভার্সন Deploy করা আছে কি না দেখুন','error');
       P.loaded=false; renderAll(); return false;
@@ -18924,6 +19252,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     P.types=d.types||[]; P.batches=d.batches||[]; P.fabrics=d.fabrics||[]; P.variants=d.variants||[]; P.loaded=true; renderAll(); return true;
   }
   window.prodOpenPage = function(){ load(); };
+  window.prodReload = function(){ return load(true); };
 
   /* ── render ───────────────────────────────────────── */
   function renderTypes(){
@@ -18969,14 +19298,16 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
   }
 
   function renderBatches(){
-    var tb=$('pmod-batches');
+    var tb=$('pmod-batches'), tt=$('pmod-batch-title');
+    if(tt) tt.textContent='প্রোডাকশন ব্যাচ ('+P.batches.length+'টি'+(P.batchTotal&&P.batchTotal>P.batches.length?' — মোট '+P.batchTotal+'টির মধ্যে সর্বশেষ':'')+')';
     if(!P.batches.length){ tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px;">'+(P.loaded?'এখনো কোনো প্রোডাকশন নেই':'ডেটা লোড হয়নি')+'</td></tr>'; return; }
     tb.innerHTML = P.batches.map(function(b){
       var pcs=b.lines.map(function(l){ return esc(l.size)+'×'+l.qty; }).join(', ');
-      var wp=b.planned>0?(b.waste/b.planned*100):0;
-      return '<tr>'+
-        '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;">'+esc(b.id)+'</td>'+
-        '<td style="white-space:nowrap;">'+esc(b.date)+'</td>'+
+      var wp=b.planned>0?(b.waste/b.planned*100):0, pend=b.pending;
+      var stocked=b.stocked||b.lines.some(function(l){return l.variant;});
+      return '<tr'+(pend?' style="opacity:.6;"':'')+'>'+
+        '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;">'+(pend&&b.id.charAt(0)==='~'?'⏳':'<a href="javascript:void(0)" style="color:var(--gold);" title="ব্যাচের বিস্তারিত" onclick="prodDetail(\''+esc(b.id)+'\')">'+esc(b.id)+'</a>')+'</td>'+
+        '<td style="white-space:nowrap;" title="এন্ট্রি: '+esc(mfFmtDT(b.entryAt))+'">'+esc(mfFmtDate(b.date))+'</td>'+
         '<td><strong>'+esc(b.typeName)+'</strong></td>'+
         '<td>'+esc(b.fabricName)+'</td>'+
         '<td>'+pcs+' <span style="color:var(--text3);">('+b.totalPcs+' পিস)</span></td>'+
@@ -18984,8 +19315,8 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
         '<td style="color:'+(b.waste>0?'var(--red)':'var(--text3)')+';">'+(b.waste>0?n2(b.waste)+' গজ ('+n2(wp)+'%)':'—')+'</td>'+
         '<td style="font-weight:700;">'+tk(b.totalCost)+'</td>'+
         '<td style="font-weight:700;color:var(--gold);">'+tk(b.costPerPc)+'</td>'+
-        '<td>'+(b.stocked?'<span style="color:var(--green);font-size:11px;font-weight:700;">✔ স্টকে আছে</span>':'<button class="btn" style="font-size:11px;padding:3px 8px;" onclick="prodOpenStockIn(\''+esc(b.id)+'\')">📦 স্টকে যোগ</button>')+'</td>'+
-        '<td><button class="btn danger" title="ব্যাচ মুছুন (কাপড়ের স্টক ফেরত আসবে)" onclick="prodDeleteBatch(\''+esc(b.id)+'\')">🗑</button></td></tr>';
+        '<td>'+(pend?'<span style="font-size:11px;color:var(--text3);">⏳ সেভ হচ্ছে</span>':(stocked?'<span style="color:var(--green);font-size:11px;font-weight:700;">✔ স্টকে আছে</span>':'<button class="btn" style="font-size:11px;padding:3px 8px;" onclick="prodOpenStockIn(\''+esc(b.id)+'\')">📦 স্টকে যোগ</button>'))+'</td>'+
+        '<td style="white-space:nowrap;">'+(pend?'':'<button class="btn" title="এডিট" onclick="prodOpenEdit(\''+esc(b.id)+'\')">✏️</button> <button class="btn" title="প্রিন্ট" onclick="prodPrintBatch(\''+esc(b.id)+'\')">🖨</button> <button class="btn danger" title="ব্যাচ মুছুন (কাপড়ের স্টক ফেরত আসবে)" onclick="prodDeleteBatch(\''+esc(b.id)+'\')">🗑</button>')+'</td></tr>';
     }).join('');
   }
   function renderAll(){ renderTypes(); renderStock(); renderBatches(); }
@@ -19099,10 +19430,11 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
       costs.forEach(function(c){ var v=o[c.name]; if(v!==undefined && v!==''){ var f=parseFloat(v); if(isNaN(f)||f<0){ bad='সাইজ "'+s.size+'"-এর "'+c.name+'" টাকা সঠিক দিন'; } else s.ov[c.name]=f; } });
     });
     if(bad){ showToast(bad,'error'); return; }
-    P.busy=true; var btn=$('prt-save'); btn.disabled=true;
-    var r=await postToAPI({ action:'prod_saveType', id:$('prt-id').value, name:name, category:$('prt-cat').value.trim(), sizes:sizes, costs:costs, notes:$('prt-notes').value.trim() });
-    P.busy=false; btn.disabled=false;
-    if(r){ closeModal('prod-type'); showToast('✅ সাইজ চার্ট সেভ হয়েছে'); try{logAction('প্রোডাকশন: পণ্যের ধরন সেভ — '+name);}catch(e){} await load(true); }
+    var typeId=$('prt-id').value;
+    closeModal('prod-type');                         // ⚡ সঙ্গে সঙ্গে বন্ধ
+    MFSave.enqueue({ title:'পণ্যের ধরন: '+name, payload:{ action:'prod_saveType', id:typeId, name:name, category:$('prt-cat').value.trim(), sizes:sizes, costs:costs, notes:$('prt-notes').value.trim() }, okMsg:'✅ সাইজ চার্ট সেভ হয়েছে',
+      onDone:function(){ try{logAction('প্রোডাকশন: পণ্যের ধরন সেভ — '+name);}catch(e){} load(true); },
+      reopen:function(){ window.prodOpenType(typeId||undefined); } });
   };
   window.prodDeleteType = async function(id){
     if(P.busy) return; var t=typeById(id); if(!t) return;
@@ -19117,8 +19449,8 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     if(!P.fabrics.length){ showToast('আগে “কাপড়ের স্টক” পেজে কাপড় যোগ করুন ও ক্রয় এন্ট্রি দিন','info'); return; }
     $('pb-fabric').innerHTML=P.fabrics.map(function(f){ return '<option value="'+esc(f.id)+'">'+esc(fabLabel(f))+' ('+n2(f.stock)+' গজ)</option>'; }).join('');
     $('pb-type').innerHTML=P.types.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
-    $('pb-date').value=today(); $('pb-date').max=today(); $('pb-note').value=''; $('pb-actual').value='';
-    $('pb-stockin').checked=true;
+    $('pb-date').value=today(); $('pb-date').max=today(); $('pb-fabric').disabled=false; $('pb-note').value=''; $('pb-actual').value='';
+    $('pb-stockin').checked=true; P.edit=null; prodEditUi();
     var f0=fabById($('pb-fabric').value); $('pb-color').value=f0?(f0.color||''):'';
     window.prodBatchType(); openModal('prod-batch');
   };
@@ -19144,13 +19476,21 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     }).join('') : '';
     window.prodBatchHints(); window.prodBatchCalc();
   };
+  // এডিট মোডে: এই ব্যাচ যে কাপড় আগে নিয়েছিল তা ফেরত ধরে হিসাব; একই কাপড় হলে আগের গড় দাম
+  function effF(f){ if(!f) return f; var g={}; for(var k in f) g[k]=f[k]; if(P.edit && P.edit.fabricId===f.id){ g.stock=f.stock+P.edit.back; if(P.edit.avg>0) g.avgRate=P.edit.avg; } return g; }
+  function prodEditUi(){
+    var e=P.edit, t=$('pb-title'), btn=$('pb-save'), nt=$('pb-edit-note');
+    if(t) t.textContent=e?('✏️ প্রোডাকশন এডিট — '+e.id):'🏭 নতুন প্রোডাকশন';
+    if(btn) btn.textContent=e?'💾 আপডেট করুন':'💾 প্রোডাকশন সেভ করুন';
+    if(nt){ nt.style.display=e?'':'none'; nt.innerHTML=e?('<div style="line-height:1.7;">⚠ এডিট করলে আগের কাপড়ের ব্যবহার/অপচয় উল্টে নতুন করে হিসাব হবে (ডাবল কাটা যাবে না)।'+(e.stocked?'<br>এই ব্যাচের পিস Inventory-তে তোলা আছে — আগের পিস বাদ দিয়ে নতুন সংখ্যা যোগ হবে। <strong>ইতিমধ্যে বিক্রি হয়ে থাকলে এডিট ব্লক হবে</strong> (Inventory পেজ থেকে আগে সংশোধন করুন)।':'')+'</div>'):''; }
+  }
   function readLines(){
     var out=[]; Array.prototype.forEach.call(document.querySelectorAll('#pb-sizes .pb-q'),function(i){
       var q=Math.round(parseFloat(i.value)||0); if(q>0) out.push({size:i.getAttribute('data-size'),qty:q,gaj:parseFloat(i.getAttribute('data-gaj')),other:parseFloat(i.getAttribute('data-other'))||0});
     }); return out;
   }
   window.prodBatchCalc = function(){
-    var t=typeById($('pb-type').value), f=fabById($('pb-fabric').value), box=$('pb-summary'), lines=readLines();
+    var t=typeById($('pb-type').value), f=effF(fabById($('pb-fabric').value)), box=$('pb-summary'), lines=readLines();
     if(!t||!f){ box.innerHTML='—'; return; }
     var pcs=0, planned=0, otherSum=0; lines.forEach(function(l){ pcs+=l.qty; planned+=l.qty*l.gaj; otherSum+=l.qty*l.other; });
     if(!pcs){ box.className='alert-box info'; box.innerHTML='<div>সাইজ অনুযায়ী পিস সংখ্যা দিন — মোট গজ ও খরচ এখানে দেখাবে।<br>কাপড়ের বর্তমান স্টক: <strong>'+n2(f.stock)+' গজ</strong>'+(f.avgRate?' · গড় দাম: <strong>'+tk(f.avgRate)+'/গজ</strong>':'')+'</div>'; return; }
@@ -19170,7 +19510,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
   };
   window.prodSaveBatch = async function(){
     if(P.busy) return;
-    var f=fabById($('pb-fabric').value), t=typeById($('pb-type').value), lines=readLines();
+    var f=effF(fabById($('pb-fabric').value)), t=typeById($('pb-type').value), lines=readLines();
     if(!f||!t){ showToast('কাপড় ও পণ্যের ধরন বেছে নিন','error'); return; }
     if(!lines.length){ showToast('অন্তত একটি সাইজের পিস সংখ্যা দিন','error'); return; }
     var planned=0; lines.forEach(function(l){ planned+=l.qty*l.gaj; });
@@ -19180,20 +19520,102 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     var on=$('pb-stockin').checked, color=$('pb-color').value.trim(), sells={}, noPrice=0;
     if(on && !color){ showToast('বিক্রির জন্য কালারের নাম দিন (অথবা “স্টকে যোগ করুন” টিক তুলে দিন)','error'); return; }
     if(on){ lines.forEach(function(l){ var inp=document.querySelector('#pb-sizes .pb-p[data-size="'+l.size.replace(/"/g,'\\"')+'"]'); if(inp && !inp.disabled){ var pv=parseFloat(inp.value); if(pv>0) sells[l.size]=pv; else noPrice++; } }); }
-    P.busy=true; var btn=$('pb-save'); btn.disabled=true;
-    var r=await postToAPI({ action:'prod_addBatch', fabricId:f.id, typeId:t.id, date:$('pb-date').value,
-      lines:lines.map(function(l){ return {size:l.size,qty:l.qty}; }), actualGaj:av===''?'':actual, note:$('pb-note').value.trim(),
-      stockIn:on, variantLabel:color, sells:sells });
-    P.busy=false; btn.disabled=false;
-    if(r && r.stockError){ showToast('প্রোডাকশন সেভ হয়েছে, কিন্তু বিক্রির স্টকে যোগ হয়নি — ব্যাচ তালিকা থেকে “স্টকে যোগ” চেপে আবার চেষ্টা করুন','error'); }
-    if(r){ closeModal('prod-batch'); showToast(on&&!(r&&r.stockError)?'✅ প্রোডাকশন সেভ — কাপড় বাদ ও তৈরি পিস বিক্রির স্টকে যোগ হয়েছে':'✅ প্রোডাকশন সেভ হয়েছে — কাপড় বাদ গেছে'); if(on && noPrice>0 && !(r&&r.stockError)) setTimeout(function(){ showToast('ℹ️ '+noPrice+'টি নতুন ভ্যারিয়েন্টের বিক্রয় মূল্য দেওয়া হয়নি — Inventory পেজ থেকে সেট করুন','info'); },900); try{logAction('প্রোডাকশন: '+t.name+' — '+fabLabel(f)+' — '+n2(actual)+' গজ');}catch(e){} await load(true); refreshInv(); }
+    var edit=P.edit, form={ fabricId:f.id, typeId:t.id, date:$('pb-date').value, note:$('pb-note').value.trim(), actual:av, lines:lines, on:on, color:color, sells:sells, edit:edit };
+    var payload={ action:edit?'prod_editBatch':'prod_addBatch', fabricId:f.id, typeId:t.id, date:form.date,
+      lines:lines.map(function(l){ return {size:l.size,qty:l.qty}; }), actualGaj:av===''?'':actual, note:form.note,
+      stockIn:on, variantLabel:color, sells:sells };
+    if(edit) payload.id=edit.id;
+    // আশাবাদী প্রদর্শন
+    var real=fabById(f.id), fOrig=real?real.stock:0;
+    if(edit){ P.batches.forEach(function(x){ if(x.id===edit.id) x.pending=true; }); }
+    else {
+      var pcsN=0; lines.forEach(function(l){pcsN+=l.qty;});
+      P.batches.unshift({ id:'~n'+(++P.pn), pending:true, date:form.date, typeName:t.name, fabricName:fabLabel(f), lines:lines.map(function(l){return {size:l.size,qty:l.qty};}), totalPcs:pcsN, planned:planned, actual:actual, waste:Math.max(0,actual-planned), totalCost:0, costPerPc:0, stocked:'' });
+      if(real) real.stock=Math.max(0,real.stock-actual);
+    }
+    renderAll();
+    closeModal('prod-batch');                        // ⚡ সঙ্গে সঙ্গে বন্ধ
+    var ttl=(edit?'প্রোডাকশন এডিট '+edit.id:'প্রোডাকশন: ')+t.name+' — '+fabLabel(f);
+    MFSave.enqueue({ title:ttl, payload:payload, okMsg:edit?'✅ ব্যাচ আপডেট — কাপড়ের স্টক, খরচ ও লাইন নতুন করে হিসাব হয়েছে':false,
+      onDone:function(r){
+        if(r&&r.stockError) showToast('প্রোডাকশন সেভ হয়েছে, কিন্তু বিক্রির স্টকে যোগ হয়নি — ব্যাচ তালিকা থেকে “স্টকে যোগ” চেপে আবার চেষ্টা করুন','error');
+        else if(!edit) showToast(on?'✅ প্রোডাকশন সেভ ('+((r&&r.id)||'')+') — কাপড় বাদ ও তৈরি পিস বিক্রির স্টকে যোগ হয়েছে':'✅ প্রোডাকশন সেভ ('+((r&&r.id)||'')+') — কাপড় বাদ গেছে');
+        if(on && noPrice>0 && !(r&&r.stockError)) setTimeout(function(){ showToast('ℹ️ '+noPrice+'টি নতুন ভ্যারিয়েন্টের বিক্রয় মূল্য দেওয়া হয়নি — Inventory পেজ থেকে সেট করুন','info'); },900);
+        try{logAction('প্রোডাকশন '+(edit?'এডিট '+edit.id+': ':'')+t.name+' — '+fabLabel(f)+' — '+n2(actual)+' গজ');}catch(e){}
+        load(true); refreshInv(); try{ if(window.fabReload) fabReload(); }catch(e){}
+      },
+      onFail:function(){ load(true); },
+      reopen:function(){ openBatchWith(form); } });
+  };
+  // ব্যর্থ সেভ থেকে ফর্ম আবার খোলা (ডেটা সহ)
+  function openBatchWith(form){
+    if(form.edit){ window.prodOpenEdit(form.edit.id, form); return; }
+    window.prodOpenBatch();
+    $('pb-fabric').value=form.fabricId; $('pb-type').value=form.typeId; window.prodBatchType();
+    $('pb-date').value=form.date; $('pb-note').value=form.note; $('pb-actual').value=form.actual||''; $('pb-stockin').checked=!!form.on; $('pb-color').value=form.color||'';
+    form.lines.forEach(function(l){ var i=document.querySelector('#pb-sizes .pb-q[data-size="'+String(l.size).replace(/"/g,'\\"')+'"]'); if(i) i.value=l.qty; });
+    window.prodBatchHints(); window.prodBatchCalc();
+  }
+
+  /* ── ব্যাচ এডিট মডাল ── */
+  window.prodOpenEdit = function(id, form){
+    var b=null; P.batches.forEach(function(x){ if(x.id===id) b=x; });
+    if(!b){ showToast('ব্যাচ পাওয়া যায়নি','error'); return; }
+    var stocked=!!b.stocked||b.lines.some(function(l){return l.variant;});
+    P.edit={ id:id, fabricId:b.fabricId, back:b.actual, avg:b.avgRate, stocked:stocked };
+    $('pb-fabric').innerHTML=P.fabrics.map(function(f){ return '<option value="'+esc(f.id)+'">'+esc(fabLabel(f))+' ('+n2(f.stock)+' গজ)</option>'; }).join('');
+    $('pb-type').innerHTML=P.types.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
+    $('pb-fabric').value=form?form.fabricId:b.fabricId; $('pb-type').value=form?form.typeId:b.typeId; $('pb-fabric').disabled=false;
+    window.prodBatchType();
+    $('pb-date').value=form?form.date:b.date; $('pb-date').removeAttribute('max'); $('pb-note').value=form?form.note:(b.note||'');
+    var qmap={}; (form?form.lines:b.lines).forEach(function(l){ qmap[l.size]=l.qty; });
+    Array.prototype.forEach.call(document.querySelectorAll('#pb-sizes .pb-q'),function(i){ var q=qmap[i.getAttribute('data-size')]; if(q) i.value=q; });
+    $('pb-actual').value=form?(form.actual||''):b.actual;
+    $('pb-stockin').checked=form?!!form.on:stocked;
+    var color='', ln=b.lines.filter(function(l){return l.invId;})[0];
+    if(ln){ P.variants.forEach(function(v){ if(v.invId===ln.invId) color=v.color; }); }
+    $('pb-color').value=form?(form.color||''):(color||((fabById(b.fabricId)||{}).color||''));
+    prodEditUi(); window.prodBatchHints(); window.prodBatchCalc(); openModal('prod-batch');
+  };
+
+  /* ── ব্যাচ বিস্তারিত ── */
+  function batchById(id){ var b=null; P.batches.forEach(function(x){ if(x.id===id) b=x; }); return b; }
+  function detailHtml(b,forPrint){
+    var h='<div class="'+(forPrint?'det':'')+'"><div style="margin-bottom:6px;"><strong>'+esc(b.id)+'</strong> · '+esc(b.typeName)+' · '+esc(b.fabricName)+'</div>'+
+      '<div style="font-size:12px;line-height:1.7;margin-bottom:8px;">প্রোডাকশন তারিখ: <strong>'+esc(mfFmtDate(b.date))+'</strong> · এন্ট্রি: '+esc(mfFmtDT(b.entryAt))+(b.stocked?' · স্টকে যোগ: '+esc(mfFmtDT(b.stocked)):'')+(b.note?'<br>নোট: '+esc(b.note):'')+'</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="text-align:left;">সাইজ</th><th style="text-align:right;">পিস</th><th style="text-align:right;">গজ/পিস</th><th style="text-align:right;">কাপড় খরচ/পিস</th><th style="text-align:right;">অন্যান্য/পিস</th><th style="text-align:right;">মোট/পিস</th><th style="text-align:right;">সাইজ মোট</th></tr></thead><tbody>'+
+      b.lines.map(function(l){ return '<tr><td>'+esc(l.size)+'</td><td style="text-align:right;">'+l.qty+'</td><td style="text-align:right;">'+n2(l.gaj)+'</td><td style="text-align:right;">'+n2(l.fabricCostPc)+'</td><td style="text-align:right;">'+n2(l.otherCostPc)+'</td><td style="text-align:right;">'+n2(l.costPc)+'</td><td style="text-align:right;">'+n2(l.costPc*l.qty)+'</td></tr>'; }).join('')+'</tbody></table>'+
+      '<div style="margin-top:8px;font-size:12px;line-height:1.8;"><strong>কস্ট সামারি:</strong> মোট '+b.totalPcs+' পিস · পরিকল্পিত '+n2(b.planned)+' গজ / ব্যবহৃত '+n2(b.actual)+' গজ · অপচয় '+n2(b.waste)+' গজ · গড় দাম '+tk(b.avgRate)+'/গজ<br>'+
+      'কাপড়ের খরচ '+tk(b.fabricCost)+' + অন্যান্য '+tk(b.otherCost)+' = মোট <strong>'+tk(b.totalCost)+'</strong> · গড় খরচ/পিস <strong>'+tk(b.costPerPc)+'</strong></div></div>';
+    return h;
+  }
+  window.prodDetail = function(id){
+    var b=batchById(id); if(!b) return;
+    $('pd-body').innerHTML=detailHtml(b,false); $('pd-edit').onclick=function(){ closeModal('prod-detail'); window.prodOpenEdit(id); }; $('pd-print').onclick=function(){ window.prodPrintBatch(id); };
+    openModal('prod-detail');
+  };
+  window.prodPrintBatch = function(id){ var b=batchById(id); if(!b) return; mfPrintDoc('প্রোডাকশন ব্যাচ '+b.id,'ব্যাচ বিস্তারিত',detailHtml(b,true)); };
+  window.prodPrint = async function(){
+    showToast('প্রিন্টের জন্য সম্পূর্ণ ডেটা আনা হচ্ছে…','info');
+    var d=await fetchFromAPI('prod_data',{ limit:0, _:Date.now() });
+    if(!d){ showToast('ডেটা আনা যায়নি','error'); return; }
+    var bs=(d.batches||[]).slice().reverse(), pcs=0, cost=0, g=0, w=0;
+    bs.forEach(function(b){ pcs+=b.totalPcs; cost+=b.totalCost; g+=b.actual; w+=b.waste; });
+    var h='<div class="bx"><div class="b">মোট ব্যাচ<br><b>'+bs.length+'</b></div><div class="b">মোট পিস<br><b>'+pcs+'</b></div><div class="b">ব্যবহৃত কাপড়<br><b>'+n2(g)+' গজ</b> (অপচয় '+n2(w)+')</div><div class="b">মোট খরচ<br><b>'+tk(cost)+'</b></div></div>';
+    h+='<h3>প্রোডাকশন ব্যাচ তালিকা</h3><table><thead><tr><th>ব্যাচ</th><th>তারিখ</th><th>পণ্য</th><th>কাপড়</th><th>সাইজ অনুযায়ী পিস</th><th class="r">গজ (পরি./ব্যব.)</th><th class="r">অপচয়</th><th class="r">মোট খরচ</th><th class="r">খরচ/পিস</th></tr></thead><tbody>'+
+      bs.map(function(b){ return '<tr><td>'+esc(b.id)+'</td><td>'+esc(mfFmtDate(b.date))+'</td><td>'+esc(b.typeName)+'</td><td>'+esc(b.fabricName)+'</td><td>'+b.lines.map(function(l){return esc(l.size)+'×'+l.qty;}).join(', ')+' ('+b.totalPcs+')</td><td class="r">'+n2(b.planned)+' / '+n2(b.actual)+'</td><td class="r">'+n2(b.waste)+'</td><td class="r">'+n2(b.totalCost)+'</td><td class="r">'+n2(b.costPerPc)+'</td></tr>'; }).join('')+'</tbody></table>';
+    h+='<h3>ব্যাচ বিস্তারিত (সাইজ অনুযায়ী প্রোডাকশন ও কস্ট সামারি)</h3>'+bs.map(function(b){ return detailHtml(b,true); }).join('');
+    mfPrintDoc('প্রোডাকশন রিপোর্ট','ব্যাচ তালিকা, বিস্তারিত ও কস্ট সামারি',h);
+    try{logAction('প্রোডাকশন রিপোর্ট প্রিন্ট করেছেন');}catch(e){}
   };
   window.prodDeleteBatch = async function(id){
     if(P.busy) return;
     var bd=null; P.batches.forEach(function(x){ if(x.id===id) bd=x; });
     if(!confirm('এই প্রোডাকশন ব্যাচ মুছে ফেলবেন? কাপড়ের গজ স্টকে ফেরত আসবে।'+(bd&&bd.stocked?'\n\nএই ব্যাচের পিস বিক্রির স্টকে তোলা হয়েছিল — সেগুলোও স্টক থেকে কমানো হবে (বিক্রি হয়ে গেলে মোছা যাবে না)।':''))) return;
-    P.busy=true; var r=await postToAPI({ action:'prod_deleteBatch', id:id }); P.busy=false;
-    if(r){ showToast('✅ ব্যাচ মুছে ফেলা হয়েছে — কাপড়ের স্টক ফেরত এসেছে'); try{logAction('প্রোডাকশন ব্যাচ মুছেছেন — '+id);}catch(e){} await load(true); refreshInv(); }
+    P.batches.forEach(function(x){ if(x.id===id) x.pending=true; }); renderAll();
+    MFSave.enqueue({ title:'ব্যাচ মোছা '+id, payload:{ action:'prod_deleteBatch', id:id }, okMsg:'✅ ব্যাচ মুছে ফেলা হয়েছে — কাপড়ের স্টক ফেরত এসেছে',
+      onDone:function(){ try{logAction('প্রোডাকশন ব্যাচ মুছেছেন — '+id);}catch(e){} load(true); refreshInv(); try{ if(window.fabReload) fabReload(); }catch(e){} },
+      onFail:function(){ load(true); } });
   };
 
   /* ── আগের ব্যাচের তৈরি পিস পরে বিক্রির স্টকে যোগ ─────────────── */
@@ -19227,26 +19649,301 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     var id=$('psi-id').value, color=$('psi-color').value.trim();
     if(!color){ showToast('বিক্রির জন্য কালারের নাম দিন','error'); return; }
     var sells={}; Array.prototype.forEach.call(document.querySelectorAll('#psi-sizes .psi-p'),function(i){ if(!i.disabled){ var v=parseFloat(i.value); if(v>0) sells[i.getAttribute('data-size')]=v; } });
-    P.busy=true; var btn=$('psi-save'); btn.disabled=true;
-    var r=await postToAPI({ action:'prod_stockInBatch', id:id, variantLabel:color, sells:sells });
-    P.busy=false; btn.disabled=false;
-    if(r){ closeModal('prod-stockin'); showToast('✅ তৈরি পিস বিক্রির স্টকে যোগ হয়েছে'); try{logAction('প্রোডাকশন ব্যাচ স্টকে যোগ — '+id+' — '+color);}catch(e){} await load(true); refreshInv(); }
+    closeModal('prod-stockin');                      // ⚡ সঙ্গে সঙ্গে বন্ধ
+    MFSave.enqueue({ title:'স্টকে যোগ '+id+' — '+color, payload:{ action:'prod_stockInBatch', id:id, variantLabel:color, sells:sells }, okMsg:'✅ তৈরি পিস বিক্রির স্টকে যোগ হয়েছে',
+      onDone:function(){ try{logAction('প্রোডাকশন ব্যাচ স্টকে যোগ — '+id+' — '+color);}catch(e){} load(true); refreshInv(); },
+      onFail:function(){ load(true); }, reopen:function(){ window.prodOpenStockIn(id); } });
   };
 
   /* ── Excel (CSV) এক্সপোর্ট ─────────────────────────────── */
-  window.prodExportBatches = function(){
-    if(!P.batches.length){ showToast('এক্সপোর্ট করার মতো ব্যাচ নেই','info'); return; }
-    var rows=[['ব্যাচ','তারিখ','পণ্য','কাপড়','সাইজ অনুযায়ী পিস','মোট পিস','পরিকল্পিত গজ','ব্যবহৃত গজ','অপচয় গজ','কাপড়ের খরচ','অন্যান্য খরচ','মোট খরচ','গড় খরচ/পিস','বিক্রির স্টকে','নোট']];
-    P.batches.forEach(function(b){ rows.push([b.id,b.date,b.typeName,b.fabricName,b.lines.map(function(l){ return l.size+'×'+l.qty; }).join(' '),b.totalPcs,b.planned,b.actual,b.waste,b.fabricCost,b.otherCost,b.totalCost,b.costPerPc,b.stocked?'হ্যাঁ':'না',b.note]); });
-    window.mfCsvDownload('MF_FASHION_Production_'+today()+'.csv',rows);
-  };
+  window.prodExportBatches = function(){ if(window.mfBackupQuick) mfBackupQuick('prod'); };
   window.prodExportStock = function(){
     if(!P.variants.length){ showToast('এক্সপোর্ট করার মতো তৈরি পণ্যের স্টক নেই','info'); return; }
     var rows=[['পণ্য','কালার','সাইজ','স্টক (পিস)','সতর্কতা','বিক্রয় মূল্য','খরচ/পিস','স্টক মূল্য (খরচে)','Inventory নাম']];
     P.variants.forEach(function(v){ rows.push([v.typeName,v.color,v.size,v.stock,v.alert,v.sell,v.cost,Math.round(v.stock*v.cost*100)/100,v.name]); });
-    window.mfCsvDownload('MF_FASHION_Finished_Stock_'+today()+'.csv',rows);
+    mfDownload('MF_FASHION_Finished_Stock_'+today()+'.csv',new Blob([mfCsvBuild(rows)],{type:'text/csv;charset=utf-8'}));
   };
 })();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   💾 BACKUP / RESTORE / MIGRATION (কাপড়ের স্টক + প্রোডাকশন)
+   Export: .xlsx (একাধিক শিট) বা CSV সেট • Date-range/Single/Quick ফিল্টার • Opening/Closing ব্যালেন্স
+   Import: CSV (একাধিক ফাইল একসাথে) বা .xlsx • প্রিভিউ → Merge/Restore • ব্যাচ আপলোড
+═══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  var esc=mfEsc;
+  var ORDER=['Fabric_Items','Fabric_Ledger','Fabric_Balances','Prod_Types','Prod_Sizes','Prod_Batches','Prod_Lines','Prod_Variants_Ref'];
+  var B={ ctx:'both', files:[], tables:null, sid:'', previewed:false, busy:false };
+
+  function norm(h){ return String(h==null?'':h).toLowerCase().replace(/[^a-z0-9]/g,''); }
+  function setProg(txt,pct){ var e=$('mfb-prog'); if(!e) return; e.style.display=txt?'':'none'; e.innerHTML=txt?('<div style="font-size:12px;margin-bottom:4px;">'+esc(txt)+'</div><div style="height:6px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+(pct||0)+'%;background:var(--gold);transition:width .2s;"></div></div>'):''; }
+
+  /* ── ট্যাব / খোলা ── */
+  window.mfBackupOpen=function(ctx,tab){
+    B.ctx=ctx||'both';
+    var r=document.querySelector('input[name="mfb-mod"][value="'+B.ctx+'"]'); if(r) r.checked=true;
+    var r2=$('mfr-scope'); if(r2) r2.value=B.ctx;
+    mfBkTab(tab||'backup'); mfBkType(); openModal('mf-backup');
+  };
+  window.mfBkTab=function(t){
+    $('mfb-p-backup').style.display=t==='backup'?'':'none'; $('mfb-p-restore').style.display=t==='restore'?'':'none';
+    var bb=$('mfb-btns-backup'); if(bb) bb.style.display=t==='backup'?'contents':'none';
+    $('mfb-t-backup').classList.toggle('primary',t==='backup'); $('mfb-t-restore').classList.toggle('primary',t==='restore');
+  };
+  function ymd(d){ return mfIsoDate(d); }
+  function dhakaToday(){ return mfToday(); }
+  function addDays(s,n){ var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s), d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]+n)); return d.getUTCFullYear()+'-'+('0'+(d.getUTCMonth()+1)).slice(-2)+'-'+('0'+d.getUTCDate()).slice(-2); }
+  function quickRange(k){
+    var t=dhakaToday(), y=+t.slice(0,4), m=+t.slice(5,7);
+    function mm(a){ return ('0'+a).slice(-2); }
+    function lastDay(yy,mo){ return new Date(Date.UTC(yy,mo,0)).getUTCDate(); }
+    if(k==='today') return [t,t];
+    if(k==='last7') return [addDays(t,-6),t];
+    if(k==='last30') return [addDays(t,-29),t];
+    if(k==='month') return [y+'-'+mm(m)+'-01',t];
+    if(k==='prevmonth'){ var py=m===1?y-1:y, pm=m===1?12:m-1; return [py+'-'+mm(pm)+'-01',py+'-'+mm(pm)+'-'+mm(lastDay(py,pm))]; }
+    if(k==='year') return [y+'-01-01',t];
+    return [t,t];
+  }
+  window.mfBkType=function(){
+    var t=$('mfb-type').value;
+    $('mfb-custom').style.display=t==='custom'?'':'none'; $('mfb-single').style.display=t==='single'?'':'none'; $('mfb-quick').style.display=t==='quick'?'':'none';
+    if(t==='custom'&&!$('mfb-from').value){ $('mfb-from').value=addDays(dhakaToday(),-6); $('mfb-to').value=dhakaToday(); }
+    if(t==='single'&&!$('mfb-day').value) $('mfb-day').value=dhakaToday();
+    $('mfb-count').innerHTML='';
+  };
+  function opts(){
+    var mod=(document.querySelector('input[name="mfb-mod"]:checked')||{}).value||'both', t=$('mfb-type').value, o={modules:mod,range:'full',from:'',to:''};
+    if(t==='custom'){ o.range='range'; o.from=$('mfb-from').value; o.to=$('mfb-to').value; if(!o.from&&!o.to) return {error:'From/To তারিখ দিন'}; }
+    else if(t==='single'){ o.range='range'; o.from=o.to=$('mfb-day').value; if(!o.from) return {error:'তারিখ দিন'}; }
+    else if(t==='quick'){ var q=quickRange($('mfb-qk').value); o.range='range'; o.from=q[0]; o.to=q[1]; }
+    o.format=$('mfb-fmt').value; return o;
+  }
+  var MODN={fab:'Fabric',prod:'Production',both:'Fabric+Production'};
+  async function fetchBackup(o,count){
+    var p={modules:o.modules,range:o.range,from:o.from,to:o.to,_:Date.now()}; if(count) p.count=1;
+    return await fetchFromAPI('mf_backup',p);
+  }
+  /* ── রেকর্ড প্রিভিউ ── */
+  window.mfBkPreview=async function(){
+    var o=opts(); if(o.error){ showToast(o.error,'error'); return; }
+    $('mfb-count').innerHTML='<span style="color:var(--text3);">গণনা হচ্ছে…</span>';
+    var d=await fetchBackup(o,true);
+    if(!d){ $('mfb-count').innerHTML='<span style="color:var(--red);">ডেটা আনা যায়নি — GS-এর নতুন ভার্সন Deploy করা আছে কি না দেখুন</span>'; return; }
+    var m=d.meta, c=m.counts, h='<div style="line-height:1.8;font-size:12px;">'+(m.exportType==='Full'?'<strong>Full Backup</strong>':'<strong style="color:var(--orange);">Filtered Backup</strong>: '+esc(mfFmtDate(m.from)||'শুরু')+' → '+esc(mfFmtDate(m.to)||'শেষ'))+'<br>';
+    ORDER.forEach(function(n){ if(c[n]!==undefined) h+='<span class="mf-fchip" style="margin-right:4px;">'+n.replace(/_/g,' ')+': <b>'+c[n]+'</b></span>'; });
+    h+='<br>মোট রেকর্ড: <b>'+m.totalRecords+'</b>'+(m.exportType==='Filtered'?' · Opening Balance: <b>'+m.openingBalanceGaj+' গজ</b> · Closing Balance: <b>'+m.closingBalanceGaj+' গজ</b>':'')+'</div>';
+    $('mfb-count').innerHTML=h;
+  };
+  /* ── এক্সপোর্ট ── */
+  function fmtTable(t){
+    return t.rows.map(function(r){ return r.map(function(v,j){
+      if(v===''||v===null||v===undefined) return '';
+      if(t.dateCols.indexOf(j)>=0) return mfFmtDate(v);
+      if(t.dtCols.indexOf(j)>=0) return mfFmtDT(v);
+      return v; }); });
+  }
+  function metaRows(m){
+    var r=[['Key','Value'],['Schema',m.schema],['Schema Version',m.version],['App',m.app],['Backup Date',mfFmtDT(m.backupDate)],['Timezone',m.timezone],
+      ['Export Type',m.exportType],['Modules',m.modules],['From Date',m.from?mfFmtDate(m.from):''],['To Date',m.to?mfFmtDate(m.to):''],['Total Records',m.totalRecords],
+      ['Opening Balance Total (গজ)',m.openingBalanceGaj],['Closing Balance Total (গজ)',m.closingBalanceGaj],['Opening Value (৳)',m.openingValue],['Closing Value (৳)',m.closingValue],['Required References',m.requiredRefs]];
+    ORDER.forEach(function(n){ r.push(['Records: '+n,m.counts[n]]); });
+    r.push(['Note',m.exportType==='Filtered'?'Filtered backup — Merge mode-এ রিস্টোর করুন; Full Backup-এর সমতুল্য নয়':'Full backup']);
+    return r;
+  }
+  window.mfBkExport=async function(optsIn){
+    if(B.busy) return; var o=optsIn||opts(); if(o.error){ showToast(o.error,'error'); return; }
+    B.busy=true; setProg('ডেটা সংগ্রহ হচ্ছে…',20);
+    try{
+      var d=await fetchBackup(o,false);
+      if(!d) throw new Error('ডেটা আনা যায়নি — GS-এর নতুন ভার্সন Deploy করা আছে কি না দেখুন');
+      var m=d.meta, tag=(m.exportType==='Full'?'Full':(mfFmtDate(m.from).replace(/\//g,'-')+'_to_'+mfFmtDate(m.to||m.from).replace(/\//g,'-')));
+      var base='MF_FASHION_Backup_'+MODN[o.modules].replace('+','-')+'_'+tag+'_'+mfStamp();
+      var names=ORDER.filter(function(n){ return d.tables[n]; });
+      if(o.format==='csv'){
+        setProg('CSV ফাইল তৈরি হচ্ছে…',60);
+        var all=[['Backup_Meta',metaRows(m)]].concat(names.map(function(n){ return [n,[d.tables[n].headers].concat(fmtTable(d.tables[n]))]; }));
+        for(var i=0;i<all.length;i++){ mfDownload(base+'__'+all[i][0]+'.csv',new Blob([mfCsvBuild(all[i][1])],{type:'text/csv;charset=utf-8'})); await new Promise(function(r){setTimeout(r,350);}); }
+        showToast('✅ '+all.length+'টি CSV ফাইল ডাউনলোড হয়েছে (সবগুলো একসাথে রাখুন; ব্রাউজার একাধিক ডাউনলোড চাইলে “Allow” করুন)');
+      } else {
+        setProg('Excel ফাইল তৈরি হচ্ছে…',60);
+        var X=await mfLoadXLSX(), wb=X.utils.book_new();
+        var ws0=X.utils.aoa_to_sheet(metaRows(m)); ws0['!cols']=[{wch:30},{wch:60}]; X.utils.book_append_sheet(wb,ws0,'Backup_Meta');
+        names.forEach(function(n){
+          var ws=X.utils.aoa_to_sheet([d.tables[n].headers].concat(fmtTable(d.tables[n])));
+          ws['!cols']=d.tables[n].headers.map(function(h){ return {wch:Math.max(12,Math.min(34,String(h).length+4))}; });
+          X.utils.book_append_sheet(wb,ws,n);
+        });
+        X.writeFile(wb,base+'.xlsx');
+        showToast('✅ Excel ব্যাকআপ ডাউনলোড হয়েছে ('+m.totalRecords+'টি রেকর্ড)');
+      }
+      try{ logAction('ব্যাকআপ নিয়েছেন — '+MODN[o.modules]+' ('+m.exportType+', '+m.totalRecords+' রেকর্ড)'); }catch(e){}
+    }catch(e){ showToast('❌ '+(e.message||e),'error'); }
+    B.busy=false; setProg('');
+  };
+  window.mfBackupQuick=function(mod){ showToast('সম্পূর্ণ Excel ব্যাকআপ তৈরি হচ্ছে…','info'); mfBkExport({modules:mod,range:'full',from:'',to:'',format:'xlsx'}); };
+
+  /* ── ইমপোর্ট: ফাইল পড়া ও টেবিল শনাক্ত ── */
+  function detect(name,aoa){
+    if(!aoa.length) return null;
+    var h=aoa[0].map(norm), has=function(k){ return h.indexOf(k)>=0; };
+    if(ORDER.concat(['Backup_Meta']).indexOf(name)>=0) return name;
+    if(h[0]==='key'&&h[1]==='value') return 'Backup_Meta';
+    if(has('ledgerid')) return 'Fabric_Ledger';
+    if(has('openingqty')) return 'Fabric_Balances';
+    if(has('producttype')) return 'Prod_Types';
+    if(has('batchid')&&has('plannedgaj')) return 'Prod_Batches';
+    if(has('batchid')&&has('size')&&has('qty')) return 'Prod_Lines';
+    if(has('inventoryname')) return 'Prod_Variants_Ref';
+    if(has('typeid')&&has('size')&&(has('gajpiece')||has('gaj'))) return 'Prod_Sizes';
+    if(has('fabricid')&&has('fabricname')) return 'Fabric_Items';
+    var f=String(name).replace(/\.[^.]+$/,''); for(var i=0;i<ORDER.length;i++){ if(f.indexOf(ORDER[i])>=0) return ORDER[i]; }
+    return null;
+  }
+  function readText(f){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){rej(new Error('ফাইল পড়া যায়নি: '+f.name));}; r.readAsText(f,'utf-8'); }); }
+  function readBuf(f){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){rej(new Error('ফাইল পড়া যায়নি: '+f.name));}; r.readAsArrayBuffer(f); }); }
+  function clean(aoa){ return aoa.filter(function(r){ return r.some(function(c){ return String(c==null?'':c).trim()!==''; }); }); }
+  window.mfRestoreFiles=async function(files){
+    B.tables={}; B.previewed=false; B.sid=''; $('mfr-result').innerHTML=''; $('mfr-go').disabled=true;
+    var skipped=[];
+    try{
+      for(var i=0;i<files.length;i++){
+        var f=files[i], ext=(f.name.split('.').pop()||'').toLowerCase();
+        if(ext==='xlsx'||ext==='xls'){
+          var X=await mfLoadXLSX(), wb=X.read(await readBuf(f),{type:'array'});
+          wb.SheetNames.forEach(function(sn){
+            var aoa=clean(X.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:''})), t=detect(sn,aoa);
+            if(t&&aoa.length) B.tables[t]=aoa; else skipped.push(f.name+' › '+sn);
+          });
+        } else if(ext==='csv'||ext==='txt'){
+          var aoa2=clean(mfCsvParse(await readText(f))), t2=detect(f.name,aoa2);
+          if(t2&&aoa2.length) B.tables[t2]=aoa2; else skipped.push(f.name);
+        } else skipped.push(f.name);
+      }
+    }catch(e){ showToast('❌ '+(e.message||e),'error'); }
+    renderFiles(skipped);
+  };
+  function renderFiles(skipped){
+    var names=Object.keys(B.tables), h='';
+    if(!names.length){ $('mfr-files').innerHTML='<div style="color:var(--red);font-size:12px;">কোনো চেনা টেবিল পাওয়া যায়নি'+(skipped.length?' ('+esc(skipped.join(', '))+')':'')+'</div>'; return; }
+    h+='<div style="font-size:12px;line-height:1.9;">';
+    ['Backup_Meta'].concat(ORDER).forEach(function(n){ if(B.tables[n]) h+='<span class="mf-fchip" style="margin-right:4px;">'+n.replace(/_/g,' ')+': <b>'+(B.tables[n].length-1)+'</b></span>'; });
+    if(skipped.length) h+='<br><span style="color:var(--orange);">চেনা যায়নি/বাদ: '+esc(skipped.join(', '))+'</span>';
+    var m=metaObj(); if(m){ h+='<br>Schema: <b>'+esc(m.schema||'?')+'</b> v'+esc(m.schemaversion||'?')+' · ধরন: <b>'+esc(m.exporttype||'?')+'</b>'+(m.fromdate||m.todate?' · '+esc(m.fromdate||'')+' → '+esc(m.todate||''):'')+' · মডিউল: '+esc(m.modules||'?'); }
+    else h+='<br><span style="color:var(--orange);">⚠ Backup_Meta নেই — শুধু Merge নিরাপদ (Restore/Replace বন্ধ থাকবে)</span>';
+    $('mfr-files').innerHTML=h+'</div>';
+    var filtered=m&&(String(m.exporttype).toLowerCase()==='filtered');
+    $('mfr-warn').style.display=filtered?'':'none';
+    if(filtered){ var mr=document.querySelector('input[name="mfr-mode"][value="merge"]'); if(mr) mr.checked=true; }
+    mfRModeChanged();
+    $('mfr-prev').disabled=false;
+  }
+  function metaObj(){ var t=B.tables&&B.tables.Backup_Meta; if(!t) return null; var o={}; t.slice(1).forEach(function(r){ o[norm(r[0])]=r[1]; }); return o; }
+  window.mfRModeChanged=function(){
+    var mode=(document.querySelector('input[name="mfr-mode"]:checked')||{}).value||'merge';
+    $('mfr-confirm-g').style.display=mode==='replace'?'':'none';
+    var m=metaObj(), filtered=m&&String(m.exporttype).toLowerCase()==='filtered';
+    var rep=document.querySelector('input[name="mfr-mode"][value="replace"]'); if(rep) rep.disabled=!!filtered||!m;
+    B.previewed=false; $('mfr-go').disabled=true;
+  };
+
+  /* ── সার্ভারে পাঠানো (বড় ডেটার জন্য আলাদা POST; cid দিয়ে retry-নিরাপদ) ── */
+  async function mfPost(payload){
+    var url=API_URL+'?action='+encodeURIComponent(payload.action), last=null;
+    for(var a=0;a<3;a++){
+      try{
+        var res=await fetch(url,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+        var text=await res.text(), m=text.match(/[{\[](.|\n)*[}\]]/), data=null; try{ data=JSON.parse(m?m[0]:text); }catch(e){}
+        if(!data) throw new Error('সার্ভার থেকে সঠিক উত্তর আসেনি');
+        return data;
+      }catch(e){ last=e; await new Promise(function(r){setTimeout(r,1200*(a+1));}); }
+    }
+    var small=JSON.stringify(payload).length<6500;
+    if(small){ var r2=await postToAPI(payload); if(r2) return r2; }
+    throw last||new Error('নেটওয়ার্ক সমস্যা');
+  }
+  async function stageAll(){
+    var sid='S'+Date.now()+String(Math.floor(Math.random()*1000)), names=Object.keys(B.tables), total=0, done=0;
+    names.forEach(function(n){ total+=B.tables[n].length; });
+    var first=true;
+    for(var k=0;k<names.length;k++){
+      var n=names[k], aoa=B.tables[n], hdr=aoa[0], rows=aoa.slice(1);
+      if(n==='Backup_Meta'){
+        var r0=await mfPost({action:'mf_restore_stage',sid:sid,table:'Backup_Meta',rows:rows,start:0,first:first,cid:sid+'_m'}); first=false;
+        if(r0.status!=='success') throw new Error(r0.message||'স্টেজ ব্যর্থ'); continue;
+      }
+      var rh=await mfPost({action:'mf_restore_stage',sid:sid,table:n+'#H',rows:[hdr],start:0,first:first,cid:sid+'_'+n+'_h'}); first=false;
+      if(rh.status!=='success') throw new Error(rh.message||'স্টেজ ব্যর্থ');
+      if(!rows.length){ await mfPost({action:'mf_restore_stage',sid:sid,table:n,rows:[],start:0,cid:sid+'_'+n+'_e'}); }
+      for(var i=0;i<rows.length;i+=600){
+        var chunk=rows.slice(i,i+600);
+        var rr=await mfPost({action:'mf_restore_stage',sid:sid,table:n,rows:chunk,start:i,cid:sid+'_'+n+'_'+i});
+        if(rr.status!=='success') throw new Error(rr.message||'স্টেজ ব্যর্থ ('+n+')');
+        done+=chunk.length; setProg(n+' আপলোড হচ্ছে… '+done+'/'+(total-names.length),Math.min(80,10+done/Math.max(1,total)*70));
+      }
+    }
+    return sid;
+  }
+  function runOpts(dry){
+    var mode=(document.querySelector('input[name="mfr-mode"]:checked')||{}).value||'merge';
+    return {action:'mf_restore_run',sid:B.sid,dry:dry,mode:mode,modules:$('mfr-scope').value,dupMode:$('mfr-dup').value,strict:$('mfr-strict').checked,fixOpening:$('mfr-fix').checked,confirm:mode==='replace'?$('mfr-confirm').value.trim():''};
+  }
+  window.mfRPreview=async function(){
+    if(B.busy||!B.tables||!Object.keys(B.tables).length) return;
+    B.busy=true; $('mfr-prev').disabled=true; $('mfr-go').disabled=true;
+    try{
+      setProg('ফাইল সার্ভারে পাঠানো হচ্ছে…',5);
+      B.sid=await stageAll();
+      setProg('যাচাই হচ্ছে (কিছুই লেখা হচ্ছে না)…',90);
+      var r=await mfPost(runOpts(true));
+      renderReport(r,true);
+      B.previewed=(r.status==='success'); $('mfr-go').disabled=!(r.status==='success'&&r.canApply);
+    }catch(e){ $('mfr-result').innerHTML='<div class="alert-box danger">❌ '+esc(e.message||e)+'</div>'; }
+    B.busy=false; $('mfr-prev').disabled=false; setProg('');
+  };
+  window.mfRGo=async function(){
+    if(B.busy||!B.previewed) return;
+    var o=runOpts(false);
+    if(o.mode==='replace'){
+      if(o.confirm!=='RESTORE'){ showToast('Replace-এর জন্য নিশ্চিতকরণ বক্সে RESTORE লিখুন','error'); return; }
+      if(!confirm('⚠️ Replace Restore: নির্বাচিত মডিউলের বর্তমান ডেটা ব্যাকআপ দিয়ে প্রতিস্থাপিত হবে। আগে Recovery কপি রাখা হবে। চালিয়ে যাবেন?')) return;
+    } else if(!confirm('Merge: শুধু নতুন রেকর্ড যোগ হবে, বিদ্যমান ডেটা অক্ষত থাকবে। শুরু করবেন?')) return;
+    B.busy=true; $('mfr-go').disabled=true; $('mfr-prev').disabled=true; setProg('রিস্টোর চলছে… (বন্ধ করবেন না)',92);
+    try{
+      var r=await mfPost(o);
+      renderReport(r,false);
+      if(r.status==='success'){
+        showToast('✅ '+(r.message||'রিস্টোর সম্পন্ন'));
+        try{ logAction('রিস্টোর ('+o.mode+') — '+o.modules); }catch(e){}
+        B.previewed=false; B.sid='';
+        try{ if(window.fabReload) fabReload(); if(window.prodReload) prodReload(); if(typeof loadLiveInventory==='function') loadLiveInventory(); }catch(e){}
+      } else { showToast('❌ '+(r.message||'রিস্টোর হয়নি'),'error'); $('mfr-go').disabled=false; }
+    }catch(e){ $('mfr-result').innerHTML='<div class="alert-box danger">❌ '+esc(e.message||e)+' — নেটওয়ার্ক সমস্যায় রিস্টোর অনিশ্চিত হতে পারে; আবার “যাচাই” চালিয়ে দেখুন কী যোগ হয়েছে (ডুপ্লিকেট হবে না)</div>'; }
+    B.busy=false; $('mfr-prev').disabled=false; setProg('');
+  };
+  function renderReport(r,dry){
+    if(r.status!=='success'&&!r.tables){ $('mfr-result').innerHTML='<div class="alert-box danger">❌ '+esc(r.message||'ব্যর্থ')+(r.recovery&&r.recovery.length?'<br>Recovery শিট: '+esc(r.recovery.join(', ')):'')+'</div>'; return; }
+    var h='', t=r.tables||{}, add=0, upd=0, same=0, bad=0;
+    Object.keys(t).forEach(function(n){ var x=t[n]; add+=x.add; upd+=x.update; same+=x.same; bad+=x.invalid+x.conflict; });
+    var ok=r.status==='success'&&r.canApply;
+    h+='<div class="alert-box '+(ok?'info':'danger')+'" style="margin:8px 0;"><div style="line-height:1.8;"><strong>'+(r.phase==='applied'?'✅ সম্পন্ন':(dry?'🔍 প্রিভিউ (কিছু লেখা হয়নি)':'⛔ বন্ধ'))+'</strong> · মোড: '+(r.mode==='replace'?'Restore (Replace)':'Merge')+(r.filtered?' · <span style="color:var(--orange);">Filtered ব্যাকআপ — Full Restore-এর সমতুল্য নয়</span>':'')+
+      '<br>Import হবে/হয়েছে: <b>'+(add+upd)+'</b> (নতুন '+add+', আপডেট '+upd+') · Skip (আগে থেকেই আছে): <b>'+same+'</b> · ভুল/দ্বন্দ্ব: <b style="color:'+(bad?'var(--red)':'inherit')+'">'+bad+'</b>'+
+      (r.strictBlocked?'<br>⛔ Strict মোডে ভুল/দ্বন্দ্ব থাকায় বন্ধ — ভুল ঠিক করুন অথবা Strict বন্ধ করে (ভুল রেকর্ড বাদ দিয়ে) চালান':'')+'</div></div>';
+    h+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="text-align:left;">টেবিল</th><th>মোট</th><th>নতুন</th><th>আপডেট</th><th>আছে (Skip)</th><th>দ্বন্দ্ব</th><th>ভুল</th><th>ফাইলে ডুপ্লিকেট</th></tr></thead><tbody>'+
+      Object.keys(t).map(function(n){ var x=t[n]; return '<tr><td>'+esc(n)+'</td><td style="text-align:center;">'+x.total+'</td><td style="text-align:center;">'+x.add+'</td><td style="text-align:center;">'+x.update+'</td><td style="text-align:center;">'+x.same+'</td><td style="text-align:center;">'+x.conflict+'</td><td style="text-align:center;">'+x.invalid+'</td><td style="text-align:center;">'+x.dupInFile+'</td></tr>'; }).join('')+'</tbody></table></div>';
+    if(r.fixes&&r.fixes.length) h+='<div style="margin-top:8px;font-size:12px;">🧮 Opening Balance এন্ট্রি যোগ হবে/হয়েছে: '+r.fixes.map(function(f){return esc(f.fabric)+' (+'+f.diff+' গজ, '+esc(mfFmtDate(f.date))+')';}).join(', ')+'</div>';
+    if(r.errors&&r.errors.length) h+='<details open style="margin-top:8px;"><summary style="cursor:pointer;color:var(--red);font-size:12px;">ভুল/দ্বন্দ্ব ('+r.errors.length+')</summary><div style="max-height:180px;overflow:auto;font-size:11px;line-height:1.7;">'+r.errors.map(function(e){ return '• '+esc(e.table)+(e.row?' (সারি '+e.row+')':'')+': '+esc(e.msg); }).join('<br>')+'</div></details>';
+    if(r.warnings&&r.warnings.length) h+='<details style="margin-top:6px;" '+(r.warnings.length<6?'open':'')+'><summary style="cursor:pointer;color:var(--orange);font-size:12px;">সতর্কতা ('+r.warnings.length+')</summary><div style="max-height:150px;overflow:auto;font-size:11px;line-height:1.7;">'+r.warnings.map(function(w){return '• '+esc(w);}).join('<br>')+'</div></details>';
+    if(r.info&&r.info.length) h+='<div style="margin-top:6px;font-size:11px;color:var(--text2);line-height:1.7;">'+r.info.map(function(w){return 'ℹ️ '+esc(w);}).join('<br>')+'</div>';
+    if(r.recovery&&r.recovery.length) h+='<div style="margin-top:6px;font-size:11px;">🛟 Recovery কপি (লুকানো শিট): '+esc(r.recovery.join(', '))+'</div>';
+    if(r.after) h+='<div style="margin-top:6px;font-size:12px;">রিস্টোরের পর: কাপড় '+r.after.fabrics+'টি · মোট স্টক '+r.after.totalStock+' গজ · স্টক মূল্য ৳'+r.after.stockValue+' · ব্যাচ '+r.after.batches+'টি</div>';
+    $('mfr-result').innerHTML=h;
+  }
+})();
+
 </script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
