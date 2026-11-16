@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MF FASHION Business OS</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ═══════════════════════════════════════
@@ -609,17 +609,14 @@ tbody td.muted{color:var(--text3);}
     max-width:100%!important;width:100%!important;
   }
   #modal-invoice .modal-header{ display:none!important; }
-  #invoice-print-area{
-    background:#fff!important;color:#000!important;
-    padding:20px!important;
-  }
-  #invoice-print-area *{ color:inherit; }
-  #invoice-print-area [style*="color:var(--gold)"]{ color:#8B6914!important; }
-  #invoice-print-area [style*="color:var(--green)"]{ color:#1a7a2e!important; }
-  #invoice-print-area [style*="color:var(--text3)"]{ color:#555!important; }
-  #invoice-print-area table thead tr{ background:#1a3a6b!important; }
-  #invoice-print-area #inv-brand-logo{ display:block!important; width:110px!important; height:auto!important; max-height:none!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  #invoice-print-area .inv-header-left{ display:flex!important; align-items:center!important; }
+  #invoice-print-area{ margin:0!important; box-shadow:none!important; zoom:1!important; }
+  #invoice-preview-wrap{ zoom:1!important; padding:0!important; background:none!important; }
+  #modal-invoice .modal-body{ overflow:visible!important; padding:0!important; }
+  #modal-invoice .modal{ height:auto!important; max-height:none!important; overflow:visible!important; }
+  html,body{ height:auto!important; overflow:visible!important; }
+  #modal-invoice{ padding:0!important; margin:0!important; }
+  #invoice-print-area #inv-brand-logo{ display:block!important; height:auto!important; max-height:none!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .nop{ display:none!important; }
 }
 @keyframes flashAlert{
   from{ opacity:1; box-shadow:0 0 0 0 rgba(248,81,73,0); }
@@ -1779,12 +1776,12 @@ tbody td.muted{color:var(--text3);}
 <!-- Lock Button (shown when logged in) -->
 <div class="lock-icon-btn" id="lock-btn" title="Lock Screen" onclick="lockApp()">🔒</div>
 
-<!-- ═══ MODULE 2: Invoice / Cash Memo Modal ═══ -->
+<!-- ═══ MODULE 2: Invoice / Cash Memo Modal (A4, Premium) ═══ -->
 <div class="modal-overlay" id="modal-invoice" style="z-index:10000;">
-  <div class="modal" style="max-width:560px;width:96%;">
+  <div class="modal" style="max-width:900px;width:96%;">
     <div class="modal-header">
-      <span class="modal-title">🖨️ ক্যাশ মেমো / Invoice</span>
-      <div style="display:flex;gap:8px;">
+      <span class="modal-title">🖨️ ক্যাশ মেমো / Invoice (A4)</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button id="inv-edit-toggle" onclick="toggleInvoiceEdit()" style="padding:6px 14px;background:#7c3aed;border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ এডিট</button>
         <button onclick="window.print()" style="padding:6px 14px;background:#1a3a6b;border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🖨️ প্রিন্ট</button>
         <button onclick="downloadInvoicePDF()" style="padding:6px 14px;background:#1976d2;border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">⬇️ PDF</button>
@@ -1792,95 +1789,95 @@ tbody td.muted{color:var(--text3);}
         <button class="modal-close" onclick="closeModal('invoice')">✕</button>
       </div>
     </div>
-    <div class="modal-body" style="padding:0;">
-      <div id="invoice-print-area" style="padding:34px 40px;background:#ffffff;font-family:'Noto Sans Bengali','IBM Plex Sans',sans-serif;color:#111;">
+    <div class="modal-body" style="padding:0;overflow:auto;">
+      <!-- এডিট নির্দেশনা (প্রিন্ট/PDF/PNG-তে আসে না — ইনভয়েসের বাইরে) -->
+      <div id="inv-edit-hint" class="nop" style="display:none;margin:10px 12px;padding:10px 12px;background:#f3e8ff;border:1px dashed #7c3aed;border-radius:8px;font-size:12px;color:#4c1d95;line-height:1.8;">
+        ✏️ <strong>এডিট মোড চালু।</strong> ইনভয়েসের যেকোনো লেখায় ক্লিক করে বদলান।<br>
+        <span style="border:1px dashed #7c3aed;padding:0 6px;">বেগুনি ড্যাশ</span> = স্থায়ী লেখা (হেডার, লেবেল, ফুটার…) — <strong>“এডিট শেষ” চাপলে সেভ হয়, সব ইনভয়েসে থাকবে</strong>।
+        <span style="border:1px dashed #2563eb;padding:0 6px;">নীল ড্যাশ</span> = শুধু এই ইনভয়েসের তথ্য (নাম, পণ্য, টাকা) — সেভ হয় না।<br>
+        <label style="cursor:pointer;margin-right:14px;"><input type="checkbox" id="inv-show-notes" onchange="invToggleSec('notes',this.checked)"> 📝 নোট/শর্তাবলি বক্স দেখান</label>
+        <label style="cursor:pointer;margin-right:14px;"><input type="checkbox" id="inv-show-pay" onchange="invToggleSec('pay',this.checked)"> 💳 পেমেন্ট তথ্য বক্স দেখান</label>
+        <button type="button" onclick="invTplReset()" style="padding:3px 10px;border:1px solid #7c3aed;background:#fff;color:#7c3aed;border-radius:6px;cursor:pointer;font-size:11px;">↺ ডিফল্ট লেখায় ফেরান</button>
+        <div style="font-size:11px;color:#6b21a8;">ℹ️ টেমপ্লেট এই ব্রাউজারে সংরক্ষিত থাকে; অন্য ডিভাইসে আলাদা করে একবার সাজাতে হবে।</div>
+      </div>
+      <div id="invoice-preview-wrap" style="padding:10px 0;background:#e9edf4;">
+      <div id="invoice-print-area">
+        <div class="ip-topbar"></div>
+        <div class="ip-body">
 
-        <!-- ══ HEADER ══ -->
-        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:18px;margin-bottom:20px;border-bottom:3px solid #0f2a5c;">
-          <div>
-            <img id="inv-brand-logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="MF FASHION" data-logo-black="1" width="110" style="width:110px;height:auto;display:block;object-fit:contain;">
-            <div id="inv-brand-name" style="display:none;">MF FASHION</div>
-            <span id="inv-brand-icon" style="display:none;"></span>
-            <div id="inv-brand-tagline" style="font-size:12px;color:#0f2a5c;margin-top:8px;font-weight:700;letter-spacing:.2px;"></div>
-            <div style="font-size:11px;color:#333;margin-top:3px;line-height:1.6;">বল্লা, কালিহাতী, টাঙ্গাইল, ঢাকা, বাংলাদেশ</div>
+          <!-- ══ HEADER ══ -->
+          <div class="ip-head">
+            <div class="ip-head-l">
+              <img id="inv-brand-logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="MF FASHION" data-logo-black="1" width="150" style="width:150px;height:auto;display:block;object-fit:contain;">
+              <div id="inv-brand-name" style="display:none;">MF FASHION</div>
+              <span id="inv-brand-icon" style="display:none;"></span>
+              <div class="ip-addr"><span data-tpl="addr">বল্লা, কালিহাতী, টাঙ্গাইল, ঢাকা, বাংলাদেশ</span></div>
+            </div>
+            <div class="ip-head-r">
+              <div class="ip-title"><span data-tpl="title">INVOICE</span></div>
+              <div class="ip-subtitle"><span data-tpl="subtitle">ক্যাশ মেমো</span></div>
+              <div class="ip-contact"><span data-tpl="ph1">+8801619738064</span></div>
+              <div class="ip-contact"><span data-tpl="ph2">+8801521771504</span></div>
+              <div class="ip-contact"><span data-tpl="mail">contact.mffashion@gmail.com</span></div>
+            </div>
           </div>
-          <div style="text-align:right;font-size:11px;color:#222;line-height:1.85;">
-            <div style="font-size:22px;font-weight:800;color:#0f2a5c;letter-spacing:4px;margin-bottom:4px;line-height:1.2;">INVOICE</div>
-            <div>+8801619738064</div>
-            <div>+8801521771504</div>
-            <div>contact.mffashion@gmail.com</div>
-          </div>
-        </div>
+          <div class="ip-rule"></div>
+          <div id="inv-brand-tagline" class="ip-tagline"></div>
 
-        <!-- ══ INVOICE META ══ -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:11px 16px;border:1px solid #d5dcea;border-radius:6px;background:#f6f8fc;">
-          <div>
-            <div style="color:#555;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px;font-weight:600;">Invoice No</div>
-            <div id="inv-id" style="font-family:'IBM Plex Mono',monospace;color:#0f2a5c;font-weight:700;font-size:14px;">—</div>
+          <!-- ══ META ══ -->
+          <div class="ip-meta">
+            <div class="ip-meta-c"><div class="ip-lab"><span data-tpl="lab_no">ইনভয়েস নং · INVOICE NO</span></div><div id="inv-id" class="ip-val ip-mono inv-editable">—</div></div>
+            <div class="ip-meta-c"><div class="ip-lab"><span data-tpl="lab_date">তারিখ · DATE</span></div><div id="inv-date" class="ip-val ip-mono inv-editable">—</div></div>
+            <div class="ip-meta-c ip-meta-r"><div class="ip-lab"><span data-tpl="lab_status">অবস্থা · STATUS</span></div><div><span id="inv-status" class="ip-badge" data-tpl="st_paid">সম্পূর্ণ পরিশোধিত</span></div></div>
           </div>
-          <div style="text-align:right;">
-            <div style="color:#555;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px;font-weight:600;">তারিখ</div>
-            <div id="inv-date" style="font-family:'IBM Plex Mono',monospace;color:#111;font-weight:600;font-size:14px;">—</div>
-          </div>
-        </div>
 
-        <!-- ══ CUSTOMER INFO ══ -->
-        <div style="padding:12px 16px;margin-bottom:20px;border:1px solid #d5dcea;border-left:4px solid #0f2a5c;border-radius:6px;">
-          <div style="font-size:10px;color:#0f2a5c;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">গ্রাহকের তথ্য</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px;color:#111;">
-            <div><span style="color:#555;">নাম: </span><strong id="inv-customer">—</strong></div>
-            <div><span style="color:#555;">ফোন: </span><strong id="inv-phone">—</strong></div>
-            <div style="grid-column:1/-1;"><span style="color:#555;">ঠিকানা: </span><span id="inv-address">—</span></div>
+          <!-- ══ CUSTOMER ══ -->
+          <div class="ip-bill">
+            <div class="ip-bill-t"><span data-tpl="bill_title">বিল প্রাপক · BILLED TO</span></div>
+            <div class="ip-bill-g">
+              <div><span class="ip-k"><span data-tpl="lab_name">নাম</span></span> <strong id="inv-customer" class="inv-editable">—</strong></div>
+              <div><span class="ip-k"><span data-tpl="lab_phone">ফোন</span></span> <strong id="inv-phone" class="inv-editable ip-mono">—</strong></div>
+              <div style="grid-column:1/-1;"><span class="ip-k"><span data-tpl="lab_addr">ঠিকানা</span></span> <span id="inv-address" class="inv-editable">—</span></div>
+            </div>
           </div>
-        </div>
 
-        <!-- ══ PRODUCT TABLE (border-radius/overflow নেই — html2canvas বাগ এড়াতে) ══ -->
-        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
-          <thead>
-            <tr style="background:#0f2a5c;color:#ffffff;">
-              <th style="padding:11px 12px;text-align:left;font-weight:700;font-size:12px;letter-spacing:.5px;">পণ্য</th>
-              <th style="padding:11px 8px;text-align:center;font-weight:700;font-size:12px;letter-spacing:.5px;width:70px;">পরিমাণ</th>
-              <th style="padding:11px 8px;text-align:right;font-weight:700;font-size:12px;letter-spacing:.5px;width:100px;">একক মূল্য</th>
-              <th style="padding:11px 12px;text-align:right;font-weight:700;font-size:12px;letter-spacing:.5px;width:110px;">মোট</th>
-            </tr>
-          </thead>
-          <tbody id="inv-items">
-            <tr><td colspan="4" style="padding:10px;text-align:center;color:#999;">—</td></tr>
-          </tbody>
-        </table>
+          <!-- ══ ITEMS (table-এ border-radius/overflow নেই — html2canvas বাগ এড়াতে) ══ -->
+          <table class="ip-table">
+            <thead><tr>
+              <th style="width:34px;text-align:center;"><span data-tpl="th_no">#</span></th>
+              <th style="text-align:left;"><span data-tpl="th_item">পণ্যের বিবরণ</span></th>
+              <th style="width:70px;text-align:center;"><span data-tpl="th_qty">পরিমাণ</span></th>
+              <th style="width:104px;text-align:right;"><span data-tpl="th_price">একক মূল্য</span></th>
+              <th style="width:116px;text-align:right;"><span data-tpl="th_total">মোট</span></th>
+            </tr></thead>
+            <tbody id="inv-items"><tr><td colspan="5" style="padding:10px;text-align:center;color:#999;">—</td></tr></tbody>
+          </table>
+          <div id="inv-count" class="ip-count"></div>
 
-        <!-- ══ TOTALS ══ -->
-        <div id="inv-edit-hint" style="display:none;margin-bottom:8px;padding:6px 10px;background:#f3e8ff;border:1px dashed #7c3aed;border-radius:6px;font-size:11px;color:#7c3aed;">
-          ✏️ এডিট মোড চালু — নিচের যেকোনো সংখ্যা/লেখায় ক্লিক করে সরাসরি বদলাতে পারবেন (যেমন ডেলিভারি চার্জ, পরিশোধিত)।
-        </div>
-        <div style="margin-left:auto;width:280px;font-size:13px;">
-          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e1e6f0;">
-            <span style="color:#333;">সাবটোটাল</span>
-            <span id="inv-subtotal" class="inv-editable" style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#111;">৳ 0</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e1e6f0;">
-            <span style="color:#333;">ডেলিভারি চার্জ</span>
-            <span id="inv-delivery" class="inv-editable" style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#111;">৳ 0</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e1e6f0;">
-            <span style="color:#1b5e20;font-weight:600;">পরিশোধিত</span>
-            <span id="inv-paid" class="inv-editable" style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:#1b5e20;">৳ 0</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0 4px 0;margin-top:5px;border-top:2px solid #0f2a5c;">
-            <span style="color:#0f2a5c;font-size:14px;font-weight:800;">বাকি পরিমাণ</span>
-            <span id="inv-due" class="inv-editable" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:800;color:#c62828;">৳ 0</span>
+          <!-- ══ NOTES + TOTALS ══ -->
+          <div class="ip-bottom">
+            <div class="ip-bottom-l">
+              <div id="inv-sec-notes" class="ip-box" style="display:none;"><div class="ip-box-t"><span data-tpl="notes_title">বিশেষ নোট</span></div><div class="ip-box-b"><span data-tpl="notes_body">এখানে আপনার নোট বা শর্তাবলি লিখুন।</span></div></div>
+              <div id="inv-sec-pay" class="ip-box" style="display:none;"><div class="ip-box-t"><span data-tpl="pay_title">পেমেন্ট তথ্য</span></div><div class="ip-box-b"><span data-tpl="pay_body">এখানে পেমেন্টের মাধ্যম/নম্বর লিখুন।</span></div></div>
+            </div>
+            <div class="ip-totals">
+              <div class="ip-tr"><span><span data-tpl="lab_sub">সাবটোটাল</span></span><span id="inv-subtotal" class="inv-editable ip-num">৳ 0</span></div>
+              <div class="ip-tr"><span><span data-tpl="lab_del">ডেলিভারি চার্জ</span></span><span id="inv-delivery" class="inv-editable ip-num">৳ 0</span></div>
+              <div class="ip-tr ip-paid"><span><span data-tpl="lab_paid">পরিশোধিত</span></span><span id="inv-paid" class="inv-editable ip-num">৳ 0</span></div>
+              <div class="ip-due"><span><span data-tpl="lab_due">বাকি পরিমাণ</span></span><span id="inv-due" class="inv-editable ip-num ip-due-n">৳ 0</span></div>
+            </div>
           </div>
         </div>
 
         <!-- ══ FOOTER ══ -->
-        <div style="position:relative;margin-top:34px;padding:20px 80px 0;border-top:1px solid #c9d2e3;text-align:center;">
-          <div style="font-size:14px;font-weight:700;color:#0f2a5c;line-height:1.7;">আপনার বিশ্বাসের মর্যাদা রাখাই আমাদের অঙ্গীকার!</div>
-          <div style="font-size:12.5px;color:#222;line-height:1.8;margin-top:2px;">MF FASHION-কে বেছে নেওয়ার জন্য আন্তরিক কৃতজ্ঞতা।</div>
-          <div style="font-size:12.5px;color:#222;line-height:1.8;">আপনার সন্তুষ্টিই আমাদের সাফল্য।</div>
-          <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:11px;color:#555;letter-spacing:.8px;margin-top:8px;">Thank you for trusting MF FASHION.</div>
-          
+        <div class="ip-foot">
+          <div class="ip-orn"><i></i><b>◆</b><i></i></div>
+          <div class="ip-f1"><span data-tpl="foot1">আপনার আস্থা আমাদের কাছে এক আমানত।</span></div>
+          <div class="ip-f2"><span data-tpl="foot2">সততা ও আমানতদারিতার সঙ্গে সেবা দেওয়াই MF Fashion-এর অঙ্গীকার।</span></div>
+          <div class="ip-f3"><span data-tpl="foot3">JAZAKALLAHU KHAIRAN</span></div>
+          <div class="ip-bar"><span data-tpl="bar">MF FASHION</span></div>
         </div>
-
+      </div>
       </div>
     </div>
   </div>
@@ -5035,9 +5032,11 @@ tbody td.muted{color:var(--text3);}
             <select class="form-select" id="vq-color" onchange="vqColor()" style="flex:1 1 140px;"></select>
             <select class="form-select" id="vq-size" onchange="vqHint()" style="flex:1 1 110px;"></select>
             <input class="form-input" id="vq-qty" type="number" min="1" value="1" oninput="vqHint()" style="flex:0 0 80px;" title="পরিমাণ">
-            <button type="button" class="btn primary" onclick="vqAdd()" style="padding:8px 14px;">➕ যোগ</button>
+            <button type="button" class="btn primary" id="vq-addbtn" onclick="vqAdd()" style="padding:8px 14px;">➕ যোগ</button>
           </div>
           <div id="vq-hint" style="font-size:12px;color:var(--text3);margin-top:6px;"></div>
+          <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-top:8px;cursor:pointer;"><input type="checkbox" id="vq-multi" onchange="vqGridToggle()"> 📐 একাধিক সাইজ একসাথে (এই কালারের সব সাইজের পিস এক ধাপে)</label>
+          <div id="vq-grid" style="display:none;margin-top:8px;"></div>
           <label style="display:flex;gap:6px;align-items:center;font-size:12px;margin-top:8px;cursor:pointer;"><input type="checkbox" id="vq-set" onchange="vqSetToggle()"> 🧥 সেট হিসেবে যোগ করুন (সাথে দ্বিতীয় পণ্য — যেমন পাঞ্জাবি + পায়জামা)</label>
           <div id="vq-row2" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px;">
             <select class="form-select" id="vq-type2" onchange="vqType('2')" style="flex:1 1 140px;"></select>
@@ -6236,7 +6235,7 @@ tbody td.muted{color:var(--text3);}
 // ═══════════════════════════════════════════════════════════════
 
 // ⚠️ এখানে আপনার Google Apps Script Web App URL বসান (Deploy > New Deployment > Web App)
-      const API_URL = "https://script.google.com/macros/s/AKfycbyjxNvslEWYbAGgzZ3CvdNAcCYr9wth43zf2S7gSyVQ0goGHB384iKg0JeVNVUOwzBN/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
+      const API_URL = "https://script.google.com/macros/s/AKfycbwh--5NVJFyxN2DArSiegF7lgMNPHelDINHGrZw3_tM5_9nM2pSpop1mdKM1isxYyGWjw/exec"; // ← এই URL পরিবর্তন করুন // ← এখানে আপনার Google Apps Script URL বসান
 
 // ─── CONNECTION STATE ────────────────────────────────────────
 let apiConnected = false;
@@ -7522,14 +7521,18 @@ const PROJECT_BRAND = {
 function downloadInvoicePDF() {
   const area = document.getElementById('invoice-print-area');
   if (!area) return;
-  // ✅ FIX: এডিট মোড চালু থাকলেও প্রিন্ট/PDF-এ ড্যাশড আউটলাইন যেন না দেখায়
+  // এডিট মোড চালু থাকলে এখানে বন্ধ হবে (স্থায়ী লেখা সেভ হয়) — প্রিন্ট/PDF-এ ড্যাশড আউটলাইন আসে না
   if (typeof _setInvoiceEditMode === 'function') _setInvoiceEditMode(false);
   const w = window.open('','_blank');
-  w.document.write('<html><head><meta charset="UTF-8"><title>MF FASHION Invoice</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600;700&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet"><style>body{margin:0;padding:0;font-family:"Noto Sans Bengali","IBM Plex Sans",sans-serif;background:#fff;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{body{margin:0;}}</style></head><body>');
+  if (!w) { showToast('পপ-আপ ব্লক করা আছে — অনুমতি দিন','error'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MF FASHION Invoice</title><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet"><style>@page{size:A4;margin:0}html,body{margin:0;padding:0;background:#fff}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}' + (window.__INV_CSS || '') + '</style></head><body>');
   w.document.write(area.outerHTML);
   w.document.write((window.__igxPngBtn||'')+'</body></html>');
   w.document.close();
-  setTimeout(()=>{ w.print(); w.close(); }, 400);
+  // ফন্ট (বাংলা + ইংরেজি) পুরো লোড হওয়ার পর প্রিন্ট — নইলে ডিফল্ট ফন্টে ছাপা হতো
+  const go = () => { try { w.focus(); w.print(); w.close(); } catch(e){} };
+  const ready = (w.document.fonts && w.document.fonts.ready) ? Promise.race([w.document.fonts.ready, new Promise(r=>setTimeout(r,3500))]) : Promise.resolve();
+  setTimeout(() => ready.then(() => setTimeout(go, 300)), 1200);
 }
 
 /**
@@ -8560,64 +8563,184 @@ function printInvestorReport() {
 
 // showPage-এ investor page লোড করো (নিচে মূল showPage ফাংশনে integrate করা আছে)
 
+const INV_TPL_KEY = 'mf_invoice_tpl_v1';
+const INV_ST_DEFAULT = { st_paid:'সম্পূর্ণ পরিশোধিত', st_due:'বাকি আছে' };
+let _invTplDefaults = null;
+window.__INV_CSS = `
+#invoice-print-area{box-sizing:border-box;width:210mm;min-height:297mm;margin:0 auto;background:#fff;color:#1b2233;font-family:'Noto Sans Bengali','IBM Plex Sans',sans-serif;font-size:13.5px;line-height:1.75;position:relative;display:flex;flex-direction:column;page:invoice;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;box-shadow:0 4px 24px rgba(15,42,92,.18);}
+@page invoice{size:A4;margin:0}
+@media print{#invoice-print-area{min-height:295mm!important;box-shadow:none!important}}
+#invoice-print-area *{box-sizing:border-box}
+#invoice-print-area [data-tpl]{white-space:pre-line}
+#invoice-print-area .ip-topbar{height:9px;background:linear-gradient(90deg,#0f2a5c 0%,#0f2a5c 72%,#b8923a 72%,#d9bd6a 100%)}
+#invoice-print-area .ip-body{padding:11mm 14mm 0;flex:1}
+#invoice-print-area .ip-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+#invoice-print-area .ip-head-l{max-width:62%}
+#invoice-print-area .ip-addr{margin-top:8px;font-size:12.5px;color:#3a4458;font-weight:500}
+#invoice-print-area .ip-head-r{text-align:right}
+#invoice-print-area .ip-title{font-family:'Playfair Display',Georgia,serif;font-size:34px;font-weight:700;letter-spacing:8px;color:#0f2a5c;line-height:1.1}
+#invoice-print-area .ip-subtitle{font-size:15px;font-weight:700;color:#b8923a;letter-spacing:0;margin:2px 0 8px}
+#invoice-print-area .ip-contact{font-family:'IBM Plex Sans','Noto Sans Bengali',sans-serif;font-size:12px;color:#2a3347;font-weight:500;line-height:1.75}
+#invoice-print-area .ip-rule{height:3px;margin:14px 0 6px;border-top:2px solid #0f2a5c;border-bottom:1px solid #b8923a}
+#invoice-print-area .ip-tagline{font-size:11.5px;color:#6a7488;margin-bottom:10px;min-height:4px}
+#invoice-print-area .ip-meta{display:flex;justify-content:space-between;align-items:center;margin:10px 0 14px;padding:11px 18px;background:#f5f7fb;border:1px solid #dfe5f0;border-left:4px solid #0f2a5c}
+#invoice-print-area .ip-meta-c{flex:1}
+#invoice-print-area .ip-meta-r{text-align:right}
+#invoice-print-area .ip-lab{font-family:'IBM Plex Sans','Noto Sans Bengali',sans-serif;font-size:11px;font-weight:600;letter-spacing:.2px;color:#6a7488;margin-bottom:2px}
+#invoice-print-area .ip-val{font-size:15px;font-weight:700;color:#0f2a5c}
+#invoice-print-area .ip-mono{font-family:'IBM Plex Mono','IBM Plex Sans',monospace}
+#invoice-print-area .ip-badge{display:inline-block;padding:3px 14px;border:1.5px solid #1f7a45;color:#1f7a45;background:#eefaf2;font-size:12.5px;font-weight:700;letter-spacing:.3px}
+#invoice-print-area .ip-badge.due{border-color:#b3261e;color:#b3261e;background:#fdf1f0}
+#invoice-print-area .ip-bill{padding:12px 18px;margin-bottom:16px;border:1px solid #dfe5f0}
+#invoice-print-area .ip-bill-t{font-family:'IBM Plex Sans','Noto Sans Bengali',sans-serif;font-size:11.5px;font-weight:700;letter-spacing:.2px;color:#b8923a;margin-bottom:6px}
+#invoice-print-area .ip-bill-g{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:14px}
+#invoice-print-area .ip-k{color:#6a7488;font-weight:500}
+#invoice-print-area .ip-table{width:100%;border-collapse:collapse;font-size:13.5px}
+#invoice-print-area .ip-table thead tr{background:#0f2a5c}
+#invoice-print-area .ip-table th{color:#fff;padding:10px 10px;font-size:12.5px;font-weight:700;letter-spacing:0;border:0}
+#invoice-print-area .ip-table td{padding:10px 10px;border-bottom:1px solid #e3e8f1;vertical-align:top;color:#1b2233}
+#invoice-print-area .ip-table tbody tr:nth-child(even) td{background:#f8f9fc}
+#invoice-print-area .ip-table tr{page-break-inside:avoid}
+#invoice-print-area .ip-pn{font-weight:600;color:#1b2233}
+#invoice-print-area .ip-ps{font-size:11.5px;color:#6a7488;margin-top:1px}
+#invoice-print-area .ip-num{font-family:'IBM Plex Sans','Noto Sans Bengali',sans-serif;font-variant-numeric:tabular-nums;font-weight:600}
+#invoice-print-area .ip-count{font-size:11.5px;color:#6a7488;margin:6px 2px 14px}
+#invoice-print-area .ip-bottom{display:flex;justify-content:space-between;align-items:flex-start;gap:22px;page-break-inside:avoid}
+#invoice-print-area .ip-bottom-l{flex:1;display:flex;flex-direction:column;gap:10px}
+#invoice-print-area .ip-box{border:1px solid #dfe5f0;border-left:3px solid #b8923a;padding:8px 12px;background:#fcfaf4}
+#invoice-print-area .ip-box-t{font-size:12px;font-weight:700;letter-spacing:.2px;color:#8a6a1f;margin-bottom:2px}
+#invoice-print-area .ip-box-b{font-size:12.5px;color:#2a3347;line-height:1.7}
+#invoice-print-area .ip-totals{width:78mm;font-size:13.5px}
+#invoice-print-area .ip-tr{display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px solid #e3e8f1;color:#2a3347}
+#invoice-print-area .ip-paid{color:#1f7a45;font-weight:600}
+#invoice-print-area .ip-due{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:11px 14px;background:#0f2a5c;color:#fff;border-bottom:3px solid #b8923a}
+#invoice-print-area .ip-due span:first-child{font-weight:700;font-size:14.5px}
+#invoice-print-area .ip-due-n{font-size:20px;font-weight:700;color:#ffe08a}
+#invoice-print-area .ip-due-n.zero{color:#9be7b4}
+#invoice-print-area .ip-foot{margin-top:auto;padding:16px 14mm 0;text-align:center;page-break-inside:avoid}
+#invoice-print-area .ip-orn{display:flex;align-items:center;justify-content:center;gap:10px;color:#b8923a;margin-bottom:8px}
+#invoice-print-area .ip-orn i{display:block;height:1px;width:34%;background:linear-gradient(90deg,transparent,#b8923a)}
+#invoice-print-area .ip-orn i:last-child{background:linear-gradient(90deg,#b8923a,transparent)}
+#invoice-print-area .ip-orn b{font-size:9px}
+#invoice-print-area .ip-f1{font-size:17px;font-weight:700;color:#0f2a5c;line-height:1.7}
+#invoice-print-area .ip-f2{font-size:13.5px;color:#2a3347;line-height:1.8;font-weight:500;margin-top:1px}
+#invoice-print-area .ip-f3{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:14px;letter-spacing:3px;color:#b8923a;margin-top:8px;font-weight:500}
+#invoice-print-area .ip-bar{margin:14px -14mm 0;padding:9px 0;background:#0f2a5c;color:#d9bd6a;font-family:'Playfair Display',Georgia,serif;font-size:12px;letter-spacing:6px;font-weight:600}
+`;
+function _invInjectCss(){
+  if (document.getElementById('inv-premium-css')) return;
+  const s = document.createElement('style'); s.id = 'inv-premium-css'; s.textContent = window.__INV_CSS;
+  document.head.appendChild(s);
+}
+const _invEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function _invTplEls(){ return document.querySelectorAll('#invoice-print-area [data-tpl]'); }
+function _invTplInit(){
+  if (_invTplDefaults) return;
+  _invTplDefaults = Object.assign({}, INV_ST_DEFAULT);
+  _invTplEls().forEach(e => { const k = e.dataset.tpl; if (!(k in _invTplDefaults)) _invTplDefaults[k] = e.textContent; });
+}
+function _invTplLoad(){ try { return JSON.parse(localStorage.getItem(INV_TPL_KEY) || '{}') || {}; } catch(e){ return {}; } }
+function _invTplStore(s){ try { localStorage.setItem(INV_TPL_KEY, JSON.stringify(s)); return true; } catch(e){ return false; } }
+function _invTplApply(){
+  _invTplInit();
+  const s = _invTplLoad(), t = s.t || {}, hid = s.hide || {};
+  _invTplEls().forEach(e => { const k = e.dataset.tpl; if (k.indexOf('st_') === 0) return; e.textContent = (k in t) ? t[k] : _invTplDefaults[k]; });
+  ['notes','pay'].forEach(k => {
+    const sec = document.getElementById('inv-sec-' + k), hidden = (k in hid) ? !!hid[k] : true;
+    if (sec) sec.style.display = hidden ? 'none' : '';
+    const cb = document.getElementById('inv-show-' + k); if (cb) cb.checked = !hidden;
+  });
+}
+function _invTplSave(){
+  _invTplInit();
+  const s = _invTplLoad(); s.t = s.t || {};
+  _invTplEls().forEach(e => { s.t[e.dataset.tpl] = (e.innerText || e.textContent || '').replace(/\n{3,}/g, '\n\n').trim(); });
+  return _invTplStore(s);
+}
+function invToggleSec(k, on){
+  const s = _invTplLoad(); s.hide = s.hide || {}; s.hide[k] = !on; _invTplStore(s);
+  const sec = document.getElementById('inv-sec-' + k); if (sec) sec.style.display = on ? '' : 'none';
+}
+function invTplReset(){
+  if (!confirm('ইনভয়েসের সব স্থায়ী লেখা ডিফল্টে ফিরে যাবে। নিশ্চিত?')) return;
+  try { localStorage.removeItem(INV_TPL_KEY); } catch(e){}
+  _invTplApply();
+  const st = document.getElementById('inv-status'); if (st) st.textContent = _invTplDefaults[st.dataset.tpl] || '';
+  showToast('↺ ডিফল্ট লেখা ফিরে এসেছে', 'info');
+}
+function _invFit(){
+  const wrap = document.getElementById('invoice-preview-wrap'); if (!wrap) return;
+  const avail = Math.max(280, Math.min(window.innerWidth - 28, 880));
+  const z = Math.min(1, avail / 794);
+  wrap.style.zoom = z < 1 ? String(z) : '';
+}
+window.addEventListener('resize', () => { if (document.getElementById('modal-invoice')?.classList.contains('open')) _invFit(); });
+
 function openInvoice(r) {
   const el = id => document.getElementById(id);
-  // ব্যবসার নাম (MF FASHION) ইনভয়েসের হেডিং-এ সবসময় fixed থাকবে। ঠিক নিচে সিলেক্ট করা প্রোডাক্টের
-  // নাম dynamic ভাবে দেখাবে (r.product থেকে সরাসরি) — নতুন প্রোডাক্ট অ্যাড হলে কোড বদলাতে হয় না।
+  _invInjectCss();
+  _invTplApply();
   el('inv-brand-name').textContent    = 'MF FASHION';
-  // ✅ FIX (Multi-product order, Sept 2026): একাধিক প্রোডাক্ট থাকলে ট্যাগলাইনে সংক্ষেপে দেখাও
   const items = (Array.isArray(r.items) && r.items.length) ? r.items : [{product:r.product,qty:r.qty,price:r.price,total:r.total}];
   el('inv-brand-tagline').textContent = items.length>1 ? `${items[0].product} +${items.length-1} more` : (r.product || '');
   el('inv-brand-icon').textContent    = '';
   // Meta
   el('inv-id').textContent   = r.id || ('INV-' + Date.now().toString().slice(-6));
-  el('inv-date').textContent = r.date || new Date().toLocaleDateString('bn-BD');
+  el('inv-date').textContent = (typeof mfFmtDate === 'function' && r.date) ? mfFmtDate(r.date) : (r.date || new Date().toLocaleDateString('bn-BD'));
   // Customer
   el('inv-customer').textContent = r.customer || '—';
   el('inv-phone').textContent    = r.phone    || '—';
   const addr = [r.thana, r.dist, r.div, r.address].filter(Boolean).join(', ');
   el('inv-address').textContent  = addr || '—';
-  // ✅ FIX (Multi-product order, Sept 2026): একাধিক লাইন-আইটেম থাকলে সবগুলো সারি হিসেবে দেখাও —
-  // প্রতিটা সেল "inv-editable" ক্লাস পায়, যাতে ✏️ এডিট মোডে ম্যানুয়ালি বদলানো যায়
+  // লাইন-আইটেম (প্রতিটা সেল ✏️ এডিট মোডে বদলানো যায়)। "ধরন - কালার - সাইজ" নাম হলে সুন্দরভাবে ভেঙে দেখায়
   const total = parseFloat(r.total || items.reduce((s,it)=>s+(Number(it.total)||(Number(it.qty)||0)*(Number(it.price)||0)),0) || 0);
+  let pcs = 0;
   el('inv-items').innerHTML = items.map((it, idx) => {
     const q = parseFloat(it.qty||1), p = parseFloat(it.price||0), t = parseFloat(it.total || q*p || 0);
-    // ✅ FIX (ইনভয়েস আপডেট, Sept 2026): alternating row shading — পড়তে সহজ হয়
-    const rowBg = idx % 2 === 1 ? 'background:#f6f8fc;' : '';
-    return `
-    <tr style="border-bottom:1px solid #e1e6f0;${rowBg}">
-      <td class="inv-editable" style="padding:11px 12px;color:#111;font-weight:500;">${it.product||'—'}</td>
-      <td class="inv-editable" style="padding:11px 8px;text-align:center;color:#111;">${q}</td>
-      <td class="inv-editable" style="padding:11px 8px;text-align:right;font-family:'IBM Plex Mono',monospace;color:#111;">৳${p.toLocaleString()}</td>
-      <td class="inv-editable" style="padding:11px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;color:#111;">৳${t.toLocaleString()}</td>
+    pcs += (isFinite(q) ? q : 0);
+    const parts = String(it.product || '').split(' - ');
+    const nameHtml = parts.length >= 3
+      ? `<div class="ip-pn">${_invEsc(parts[0].trim())}</div><div class="ip-ps">কালার: ${_invEsc(parts.slice(1,-1).join(' - ').trim())} &nbsp;·&nbsp; সাইজ: ${_invEsc(parts[parts.length-1].trim())}</div>`
+      : `<div class="ip-pn">${_invEsc(it.product || '—')}</div>`;
+    return `<tr>
+      <td style="text-align:center;color:#6a7488;">${idx+1}</td>
+      <td class="inv-editable">${nameHtml}</td>
+      <td class="inv-editable ip-num" style="text-align:center;">${q}</td>
+      <td class="inv-editable ip-num" style="text-align:right;">৳${p.toLocaleString('en-US')}</td>
+      <td class="inv-editable ip-num" style="text-align:right;font-weight:700;">৳${t.toLocaleString('en-US')}</td>
     </tr>`;
   }).join('');
+  el('inv-count').textContent = `মোট ${items.length}টি আইটেম · ${pcs} পিস`;
   // Totals
-  const delivery = parseFloat(r.delivery||0);
-  const paid     = parseFloat(r.paid||0);
-  const due      = parseFloat(r.due||0);
-  el('inv-subtotal').textContent = '৳ ' + total.toLocaleString();
-  el('inv-delivery').textContent = '৳ ' + delivery.toLocaleString();
-  el('inv-paid').textContent     = '৳ ' + paid.toLocaleString();
-  el('inv-due').textContent      = '৳ ' + due.toLocaleString();
-  el('inv-due').style.color      = due > 0 ? '#c62828' : '#1b5e20';
-
-  // ✅ FIX (ইনভয়েস কাস্টমাইজেশন, Sept 2026): নতুন ইনভয়েস খোলার সময় এডিট মোড বন্ধ রাখো
+  const delivery = parseFloat(r.delivery||0), paid = parseFloat(r.paid||0), due = parseFloat(r.due||0);
+  el('inv-subtotal').textContent = '৳ ' + total.toLocaleString('en-US');
+  el('inv-delivery').textContent = '৳ ' + delivery.toLocaleString('en-US');
+  el('inv-paid').textContent     = '৳ ' + paid.toLocaleString('en-US');
+  el('inv-due').textContent      = '৳ ' + due.toLocaleString('en-US');
+  el('inv-due').classList.toggle('zero', !(due > 0));
+  // অবস্থা ব্যাজ (সম্পাদনযোগ্য, আলাদাভাবে সেভ হয়)
+  const stKey = due > 0 ? 'st_due' : 'st_paid', st = el('inv-status'), saved = (_invTplLoad().t || {});
+  st.dataset.tpl = stKey; st.classList.toggle('due', due > 0);
+  st.textContent = (stKey in saved) ? saved[stKey] : _invTplDefaults[stKey];
   _setInvoiceEditMode(false);
-
   openModal('invoice');
+  setTimeout(_invFit, 30);
 }
 
 /**
- * ✅ FIX (ইনভয়েস কাস্টমাইজেশন, Sept 2026): কাস্টমারকে ডেলিভারি ফ্রি দিলে বা
- * অন্য কোনো কারণে ইনভয়েসে দেখানো সংখ্যা/লেখা বদলাতে হলে — সিস্টেমে আসল অর্ডার
- * ডেটা/হিসাব অপরিবর্তিত রেখে শুধু এই প্রিন্ট/PDF-এর জন্য ম্যানুয়ালি এডিট করা যায়।
- * কোনো কিছু শিটে সেভ হয় না — এটা শুধু ভিজ্যুয়াল/প্রিন্ট-টাইম কাস্টমাইজেশন।
+ * ইনভয়েস এডিট: দুই ধরনের লেখা —
+ *  • .inv-editable (নীল ড্যাশ): শুধু এই ইনভয়েসের তথ্য, সেভ হয় না (শিটের ডেটা অপরিবর্তিত)
+ *  • [data-tpl] (বেগুনি ড্যাশ): স্থায়ী টেমপ্লেট লেখা — “এডিট শেষ” চাপলে ব্রাউজারে সেভ, সব ইনভয়েসে প্রযোজ্য
  */
 let _invoiceEditMode = false;
 function _setInvoiceEditMode(on){
-  _invoiceEditMode = on;
+  const was = _invoiceEditMode; _invoiceEditMode = on;
   document.querySelectorAll('#invoice-print-area .inv-editable').forEach(elm => {
+    elm.contentEditable = on ? 'true' : 'false';
+    elm.style.outline = on ? '1px dashed #2563eb' : 'none';
+    elm.style.cursor = on ? 'text' : 'default';
+  });
+  document.querySelectorAll('#invoice-print-area [data-tpl]').forEach(elm => {
     elm.contentEditable = on ? 'true' : 'false';
     elm.style.outline = on ? '1px dashed #7c3aed' : 'none';
     elm.style.cursor = on ? 'text' : 'default';
@@ -8628,6 +8751,10 @@ function _setInvoiceEditMode(on){
   if (btn) {
     btn.textContent = on ? '✅ এডিট শেষ' : '✏️ এডিট';
     btn.style.background = on ? '#16a34a' : '#7c3aed';
+  }
+  if (was && !on) {
+    const ok = _invTplSave();
+    showToast(ok ? '✅ স্থায়ী লেখা সেভ হয়েছে — এখন থেকে সব ইনভয়েসে এই লেখা আসবে' : '⚠️ ব্রাউজারে সেভ করা যায়নি (স্টোরেজ বন্ধ?)', ok ? 'success' : 'error');
   }
 }
 function toggleInvoiceEdit(){
@@ -10245,9 +10372,11 @@ async function loadLiveInventory(){
     supplier:      String(r[12]||''),
     supplierPhone: String(r[13]||''),
     // v31: Split data from backend columns (if available)
-    splitIsmail: parseFloat(r[14])||null,
-    splitAshik:  parseFloat(r[15])||null,
+    // CSV-import বাগের পুরোনো সারিতে এই ঘরে তারিখ/নোট থাকতে পারে → ০–১০০ এর বাইরে বা যোগফল >১০০ হলে null
+    splitIsmail: _sanitizeSplitVal(r[14]),
+    splitAshik:  _sanitizeSplitVal(r[15]),
   })).filter(r=>r.name && r.name.trim());
+  rows.forEach(p => { if ((p.splitIsmail||0) + (p.splitAshik||0) > 100) { p.splitIsmail = null; p.splitAshik = null; } });
   // v31: Sync split data from backend to local DB
   rows.forEach(p => {
     if (p.splitIsmail != null || p.splitAshik != null) {
@@ -12273,7 +12402,30 @@ function resetOrderModal(){
 // ─── ADD / EDIT PRODUCT ──────────────────────────────────────
 let currentEditProductId = null;
 
+// প্রফিট-বণ্টন ঘরের মান যাচাই: সংখ্যা না হলে বা ০–১০০ এর বাইরে হলে null (পুরোনো CSV-import সারির তারিখ/নোট বাদ)
+function _sanitizeSplitVal(v){
+  const n = parseFloat(v);
+  return (isFinite(n) && n >= 0 && n <= 100) ? (n || null) : null;
+}
+// লুকানো প্রফিট-বণ্টন ঘরের যোগফল ১০০ ছাড়ালে অনুপাত ঠিক রেখে ১০০-এ নামায় (prefix: 'prod' বা 'eprod')
+function _fixHiddenSplit(prefix){
+  const iEl = document.getElementById(prefix+'-split-ismail');
+  const aEl = document.getElementById(prefix+'-split-ashik');
+  if(!iEl || !aEl) return;
+  const sec = iEl.closest ? iEl.closest('.profit-split-section') : null;
+  const hidden = (sec && sec.style && sec.style.display === 'none') || iEl.offsetParent === null;
+  if(!hidden) return;
+  let i = parseFloat(iEl.value), a = parseFloat(aEl.value);
+  i = isFinite(i) && i > 0 ? i : 0; a = isFinite(a) && a > 0 ? a : 0;
+  const total = i + a;
+  if(total <= 100) return;
+  const ni = Math.round(i / total * 10000) / 100;
+  iEl.value = ni;
+  aEl.value = Math.round((100 - ni) * 100) / 100;
+}
+
 async function submitProduct(){
+  _fixHiddenSplit('prod');
   const splitI = parseFloat(document.getElementById('prod-split-ismail')?.value||0);
   const splitA = parseFloat(document.getElementById('prod-split-ashik')?.value||0);
   const totalSplit = splitI + splitA;
@@ -12330,11 +12482,13 @@ function openEditProduct(p){
   const sa = p.splitAshik  != null ? parseFloat(p.splitAshik)  : saved.ashik;
   document.getElementById('eprod-split-ismail').value = si;
   document.getElementById('eprod-split-ashik').value  = sa;
+  _fixHiddenSplit('eprod');
   updateProductSplitPreview('edit');
   openModal('edit-product');
 }
 
 async function updateProduct(){
+  _fixHiddenSplit('eprod');
   const splitI = parseFloat(document.getElementById('eprod-split-ismail')?.value||0);
   const splitA = parseFloat(document.getElementById('eprod-split-ashik')?.value||0);
   const totalSplit = splitI + splitA;
@@ -20014,6 +20168,7 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     $('vq-size'+sfx).innerHTML=list.map(function(v){ return '<option value="'+esc(v.size)+'">'+esc(v.size)+' ('+v.stock+')</option>'; }).join('');
     if(list.some(function(v){ return v.size===prev; })) $('vq-size'+sfx).value=prev;
     window.vqHint();
+    if(!sfx && window.vqGridRender) window.vqGridRender();
   };
   window.vqSetToggle = function(){
     var on=setOn(); $('vq-row2').style.display=on?'flex':'none';
@@ -20051,6 +20206,45 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     $('vq-qty').value=1; window.vqHint();
     showToast('✅ '+(list.length>1?'সেট (':'')+list.map(function(v){ return v.name; }).join(' + ')+(list.length>1?')':'')+' × '+q+' অর্ডারে যোগ হয়েছে');
   };
+  /* ── একাধিক সাইজ একসাথে: নির্বাচিত পণ্য+কালারের সব সাইজ গ্রিডে, যেগুলোতে পিস লিখবেন সেগুলো আলাদা লাইনে যোগ হয় ── */
+  window.vqGridToggle = function(){
+    var on=!!($('vq-multi')&&$('vq-multi').checked);
+    if(on && setOn()){ $('vq-set').checked=false; window.vqSetToggle(); }
+    ['vq-size','vq-qty','vq-addbtn'].forEach(function(id){ var e=$(id); if(e) e.style.display=on?'none':''; });
+    window.vqGridRender();
+  };
+  window.vqGridRender = function(){
+    var g=$('vq-grid'); if(!g) return;
+    if(!($('vq-multi')&&$('vq-multi').checked)){ g.style.display='none'; g.innerHTML=''; V.grid=[]; return; }
+    var ty=$('vq-type').value, co=$('vq-color').value;
+    var list=V.variants.filter(function(v){ return v.typeName===ty && v.color===co; }).sort(function(a,b){ return sizeRank(ty,a.size)-sizeRank(ty,b.size); });
+    V.grid=list; g.style.display='';
+    if(!list.length){ g.innerHTML='<div style="font-size:12px;color:var(--text3);">এই কালারে কোনো সাইজ নেই</div>'; return; }
+    g.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px;">'+list.map(function(v,i){
+      var col=v.stock<=0?'var(--red)':(v.stock<=v.alert?'var(--orange)':'var(--green)');
+      return '<div style="border:1px solid var(--border);border-radius:8px;padding:6px 8px;min-width:92px;text-align:center;background:var(--bg3);">'+
+        '<div><strong>'+esc(v.size)+'</strong></div><div style="font-size:11px;color:'+col+';">স্টক '+v.stock+'</div><div style="font-size:11px;color:var(--text3);">৳'+n2(v.sell)+(v.sell>0?'':' ⚠')+'</div>'+
+        '<input class="form-input vq-gq" type="number" min="0" data-i="'+i+'" placeholder="0" oninput="vqGridSum()" style="width:72px;margin-top:4px;text-align:center;"></div>'; }).join('')+'</div>'+
+      '<div id="vq-gsum" style="font-size:12px;margin:8px 0;color:var(--text2);">—</div>'+
+      '<button type="button" class="btn primary" onclick="vqGridAdd()" style="padding:8px 14px;">➕ সব সাইজ অর্ডারে যোগ</button>';
+  };
+  function gridPicks(){
+    var out=[]; Array.prototype.forEach.call(document.querySelectorAll('#vq-grid .vq-gq'),function(i){
+      var q=Math.round(parseFloat(i.value)||0), v=(V.grid||[])[parseInt(i.getAttribute('data-i'),10)]; if(q>0&&v) out.push({v:v,q:q}); });
+    return out;
+  }
+  window.vqGridSum = function(){
+    var p=gridPicks(), pcs=0, amt=0; p.forEach(function(x){ pcs+=x.q; amt+=x.q*(x.v.sell||0); });
+    var e=$('vq-gsum'); if(e) e.innerHTML=p.length?('মোট <strong>'+pcs+'</strong> পিস ('+p.length+' সাইজ) · ৳<strong>'+n2(amt)+'</strong>'):'—';
+  };
+  window.vqGridAdd = function(){
+    var p=gridPicks(); if(!p.length){ showToast('অন্তত একটি সাইজের পিস লিখুন','error'); return; }
+    var short=p.filter(function(x){ return x.v.stock<x.q; });
+    if(short.length && !confirm(short.map(function(x){ return x.v.name+' — স্টকে '+x.v.stock+'টি, আপনি '+x.q+'টি'; }).join('\n')+'\n\nতবুও যোগ করবেন?')) return;
+    p.forEach(function(x){ addOne(x.v,x.q); });
+    Array.prototype.forEach.call(document.querySelectorAll('#vq-grid .vq-gq'),function(i){ i.value=''; }); window.vqGridSum();
+    showToast('✅ '+p.length+'টি সাইজ অর্ডারে যোগ হয়েছে ('+p.map(function(x){ return x.v.size+'×'+x.q; }).join(', ')+')');
+  };
   // অর্ডার মডাল খুললেই ভ্যারিয়েন্ট লোড (মডালের কোড অপরিবর্তিত — শুধু class বদল দেখা হয়)
   var modal=$('modal-add-order');
   if(modal && window.MutationObserver){
@@ -20067,6 +20261,8 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
 ═══════════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
+  var KEY='mf_inv_view_v1', view='grouped', q='', last=[];
+  try{ view=localStorage.getItem(KEY)||'grouped'; }catch(e){}
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function tk(x){ return '৳'+(Math.round(Number(x)||0)).toLocaleString('en-US'); }
   function parse(name){
@@ -20075,24 +20271,54 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
     var v={type:p[0].trim(), size:p[p.length-1].trim(), color:p.slice(1,-1).join(' - ').trim()};
     return (v.type&&v.size&&v.color)?v:null;
   }
+  var STD=['XXS','XS','S','M','L','XL','XXL','2XL','XXXL','3XL','4XL','5XL'];
+  function srank(s){ var u=String(s).toUpperCase().replace(/\s+/g,''), i=STD.indexOf(u); if(i>=0) return i; var n=parseFloat(u); return isNaN(n)?1000:100+n; }
+  function sortSizes(a){ return a.map(function(s,i){return {s:s,i:i};}).sort(function(x,y){ return (srank(x.s)-srank(y.s))||(x.i-y.i); }).map(function(o){return o.s;}); }
+  function range(a){ var v=a.filter(function(x){return x>0;}); if(!v.length) return '—'; var mn=Math.min.apply(null,v), mx=Math.max.apply(null,v); return mn===mx?tk(mn):tk(mn)+'–'+tk(mx); }
+  window.invSetView=function(v){ view=v; try{localStorage.setItem(KEY,v);}catch(e){} bar(); applyCards(); };
+  window.invGroupSearch=function(v){ q=String(v||'').trim().toLowerCase(); render(last); };
+  function bar(){
+    var cards=document.getElementById('inv-cards'); if(!cards) return;
+    var b=document.getElementById('inv-view-bar');
+    if(!b){
+      b=document.createElement('div'); b.id='inv-view-bar'; b.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px;';
+      b.innerHTML='<button class="btn" id="inv-vb-g" onclick="invSetView(\'grouped\')">📂 গ্রুপড (ডিজাইন → কালার × সাইজ)</button><button class="btn" id="inv-vb-f" onclick="invSetView(\'flat\')">🗂 সব কার্ড (সমতল)</button><input class="form-input" id="inv-gsearch" placeholder="🔎 ডিজাইন/কালার খুঁজুন…" oninput="invGroupSearch(this.value)" style="max-width:240px;"><span id="inv-vb-note" style="font-size:11px;color:var(--text3);"></span>';
+      cards.parentNode.insertBefore(b,cards);
+    }
+    var g=document.getElementById('inv-vb-g'), f=document.getElementById('inv-vb-f');
+    if(g&&f){ g.classList.toggle('primary',view==='grouped'); f.classList.toggle('primary',view==='flat'); }
+  }
+  // গ্রুপড মোডে ভ্যারিয়েন্ট-কার্ড লুকায় (নিচের Product Database টেবিল ও ডেটা অপরিবর্তিত); চেনা যায়নি এমন পণ্যের কার্ড থাকে
+  function applyCards(){
+    var cards=document.querySelectorAll('#inv-cards .inv-card'), hid=0;
+    Array.prototype.forEach.call(cards,function(c){
+      var n=c.querySelector('.inv-product'), hide=(view==='grouped')&&!!(n&&parse(n.textContent));
+      c.style.display=hide?'none':''; if(hide) hid++;
+    });
+    var note=document.getElementById('inv-vb-note');
+    if(note) note.textContent=(view==='grouped'&&hid)?(hid+'টি ভ্যারিয়েন্ট-কার্ড গ্রুপে দেখানো হচ্ছে; বাকি পণ্য নিচের কার্ডে/টেবিলে'):'';
+  }
   function render(rows){
+    last=rows||[];
     var box=document.getElementById('inv-variant-groups'); if(!box) return;
     var openSet={}; Array.prototype.forEach.call(box.querySelectorAll('details[open]'),function(d){ openSet[d.getAttribute('data-g')]=1; });
     var groups={}, order=[];
-    (rows||[]).forEach(function(r){
+    last.forEach(function(r){
       var v=parse(r.name); if(!v) return;
+      if(q && (v.type+' '+v.color).toLowerCase().indexOf(q)<0) return;
       if(!groups[v.type]){ groups[v.type]={colors:[],sizes:[],map:{}}; order.push(v.type); }
       var g=groups[v.type]; if(g.colors.indexOf(v.color)<0) g.colors.push(v.color); if(g.sizes.indexOf(v.size)<0) g.sizes.push(v.size);
       g.map[v.color+'\u0000'+v.size]=r;
     });
-    if(!order.length){ box.style.display='none'; box.innerHTML=''; return; }
+    if(!order.length){ box.style.display=q?'':'none'; box.innerHTML=q?'<div style="font-size:12px;color:var(--text3);padding:10px;">কিছু পাওয়া যায়নি</div>':''; return; }
     box.style.display='';
     var body=order.map(function(type){
-      var g=groups[type], total=0, val=0, low=0;
-      Object.keys(g.map).forEach(function(k){ var r=g.map[k]; total+=r.current; val+=r.current*r.cost; if(r.current<=r.alert) low++; });
+      var g=groups[type], total=0, val=0, low=0, zero=0, sells=[], costs=[];
+      g.sizes=sortSizes(g.sizes);
+      Object.keys(g.map).forEach(function(k){ var r=g.map[k]; total+=r.current; val+=r.current*r.cost; sells.push(Number(r.sell)||0); costs.push(Number(r.cost)||0); if(r.current<=0) zero++; else if(r.current<=r.alert) low++; });
       var h='<details data-g="'+esc(type)+'"'+(openSet[type]?' open':'')+' style="border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:var(--bg3);">'+
         '<summary style="cursor:pointer;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;list-style:none;"><strong>'+esc(type)+'</strong>'+
-        '<span style="font-size:12px;color:var(--text2);">'+g.colors.length+' কালার · মোট '+total+' পিস · স্টক মূল্য (খরচে) '+tk(val)+(low?' · <span style="color:var(--orange);">⚠ '+low+'টি কম</span>':'')+'</span></summary>'+
+        '<span style="font-size:12px;color:var(--text2);">'+g.colors.length+' কালার · মোট '+total+' পিস · বিক্রয় '+range(sells)+' · খরচ '+range(costs)+' · স্টক মূল্য (খরচে) '+tk(val)+(zero?' · <span style="color:var(--red);">'+zero+'টি শেষ</span>':'')+(low?' · <span style="color:var(--orange);">⚠ '+low+'টি কম</span>':'')+'</span></summary>'+
         '<div style="overflow-x:auto;padding:0 14px 12px;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="text-align:left;padding:6px;">কালার \\ সাইজ</th>'+
         g.sizes.map(function(s){ return '<th style="padding:6px;text-align:center;">'+esc(s)+'</th>'; }).join('')+'<th style="padding:6px;text-align:center;">মোট</th></tr></thead><tbody>';
       g.colors.forEach(function(c){
@@ -20100,18 +20326,18 @@ ${window.__igxPngBtn||''}<script>window.onload=function(){setTimeout(function(){
         h+='<tr><td style="padding:6px;"><strong>'+esc(c)+'</strong></td>'+g.sizes.map(function(s){
           var r=g.map[c+'\u0000'+s]; if(!r) return '<td style="text-align:center;color:var(--text3);">—</td>';
           rt+=r.current; var col=r.current<=0?'var(--red)':(r.current<=r.alert?'var(--orange)':'var(--green)');
-          return '<td style="text-align:center;font-weight:700;color:'+col+';" title="'+esc(r.name)+' — বিক্রয় '+tk(r.sell)+' / খরচ '+tk(r.cost)+'">'+r.current+'</td>';
+          return '<td style="text-align:center;font-weight:700;color:'+col+';" title="'+esc(r.name)+' — বিক্রয় '+tk(r.sell)+' / খরচ '+tk(r.cost)+'">'+r.current+'<div style="font-weight:400;font-size:10px;color:var(--text3);">'+tk(r.sell)+'</div></td>';
         }).join('')+'<td style="text-align:center;font-weight:700;">'+rt+'</td></tr>';
       });
       return h+'</tbody></table></div></details>';
     }).join('');
-    box.innerHTML='<div class="table-wrapper"><div class="table-header"><span class="table-title">📂 ভ্যারিয়েন্ট গ্রুপ (কালার × সাইজ)</span><span style="font-size:11px;color:var(--text3);">নিচের Product Database-এ সব সারি আগের মতোই আছে</span></div><div style="padding:12px;">'+body+'</div></div>';
+    box.innerHTML='<div class="table-wrapper"><div class="table-header"><span class="table-title">📂 ভ্যারিয়েন্ট গ্রুপ (কালার × সাইজ)</span><span style="font-size:11px;color:var(--text3);">ঘরে স্টক ও বিক্রয় মূল্য · নিচের Product Database-এ সব সারি আগের মতোই আছে</span></div><div style="padding:12px;">'+body+'</div></div>';
   }
   if(typeof window.renderInventoryData==='function'){
     var orig=window.renderInventoryData;
     window.renderInventoryData=function(rows){
       var out=orig.apply(this,arguments);
-      try{ render(rows); }catch(e){}
+      try{ bar(); render(rows); applyCards(); }catch(e){ console.error(e); }
       return out;
     };
   }
